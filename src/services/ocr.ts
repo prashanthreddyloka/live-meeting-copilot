@@ -81,9 +81,18 @@ export async function runOcr(imagePath: string): Promise<OcrResult> {
   const worker = await createWorker("eng");
   try {
     const result = await worker.recognize(imagePath);
+    const data = result.data as {
+      text: string;
+      words?: Array<{
+        text: string;
+        confidence: number;
+        bbox: { x0: number; y0: number; x1: number; y1: number };
+      }>;
+    };
+    const words = Array.isArray(data.words) ? data.words : [];
     return {
-      text: result.data.text,
-      words: result.data.words.map((word) => ({
+      text: data.text,
+      words: words.map((word) => ({
         text: word.text,
         confidence: word.confidence / 100,
         bbox: {

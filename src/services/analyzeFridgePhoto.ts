@@ -31,6 +31,12 @@ export const FOOD_KEYWORDS = [
   "potato", "sweet potato", "sausage", "sausage links", "kimchi"
 ];
 
+type TokenWithOptionalBbox = {
+  text: string;
+  confidence: number;
+  bbox?: { x: number; y: number; width: number; height: number };
+};
+
 function buildDeterministicId(name: string, index: number): string {
   return `${name.replace(/\s+/g, "-")}-${index + 1}`;
 }
@@ -44,12 +50,14 @@ function nearestExpiryForWord(word: OcrWord, expiryWords: Array<{ date: string; 
     return expiryWords[0]?.date ?? null;
   }
 
+  const wordBbox = word.bbox;
+
   const ranked = expiryWords.map((entry) => {
     if (!entry.bbox) {
       return { date: entry.date, distance: Number.MAX_SAFE_INTEGER };
     }
-    const dx = entry.bbox.x - word.bbox.x;
-    const dy = entry.bbox.y - word.bbox.y;
+    const dx = entry.bbox.x - wordBbox.x;
+    const dy = entry.bbox.y - wordBbox.y;
     return { date: entry.date, distance: Math.sqrt(dx * dx + dy * dy) };
   });
 
@@ -69,7 +77,7 @@ export async function analyzeFridgePhoto(
 
   // TODO: Plug in a real object detector after the deterministic OCR pipeline.
   const ocr = await runOcr(absolutePath);
-  const tokens = ocr.words.length > 0
+  const tokens: TokenWithOptionalBbox[] = ocr.words.length > 0
     ? ocr.words
     : ocr.text.split(/\s+/).filter(Boolean).map((word) => ({ text: word, confidence: 0.65 }));
   const dates = extractDates(ocr.text).map((date, index) => ({
