@@ -10,6 +10,8 @@ export type DetectedItem = {
   detectedExpiry?: string | null;
   inferredExpiry?: string | null;
   confidence: number;
+  detectionSource?: "ocr";
+  expirySource?: "ocr" | "rule" | "none";
   bbox?: { x: number; y: number; width: number; height: number };
   notes?: string;
 };
@@ -36,6 +38,38 @@ type TokenWithOptionalBbox = {
   confidence: number;
   bbox?: { x: number; y: number; width: number; height: number };
 };
+
+const MIN_FUZZY_SCORE = 0.82;
+const MIN_OCR_CONFIDENCE = 0.72;
+const MIN_INFERRED_EXPIRY_SCORE = 0.9;
+const OCR_STOPWORDS = new Set([
+  "istock",
+  "credit",
+  "andrey",
+  "popov",
+  "getty",
+  "images",
+  "photo",
+  "stock",
+  "tm"
+]);
+
+function normalizeFoodToken(token: string): string {
+  return token.toLowerCase().replace(/[^a-z]/g, "").trim();
+}
+
+function isUsableToken(token: TokenWithOptionalBbox): boolean {
+  const normalized = normalizeFoodToken(token.text);
+  if (normalized.length < 3) {
+    return false;
+  }
+
+  if (OCR_STOPWORDS.has(normalized)) {
+    return false;
+  }
+
+  return token.confidence >= MIN_OCR_CONFIDENCE;
+}
 
 function buildDeterministicId(name: string, index: number): string {
   return `${name.replace(/\s+/g, "-")}-${index + 1}`;
@@ -86,15 +120,16 @@ export async function analyzeFridgePhoto(
   }));
 
   const matchedTokens = tokens
+    .filter(isUsableToken)
     .map((word, index) => ({ index, word, ...fuzzyMatchToken(word.text, FOOD_KEYWORDS) }))
-    .filter((entry) => entry.match && entry.score >= 0.53);
+    .filter((entry) => entry.match && entry.score >= MIN_FUZZY_SCORE);
 
   const deduped = new Map<string, DetectedItem>();
   for (const [index, entry] of matchedTokens.entries()) {
     const name = entry.match as string;
     const rule = ingredientRules.find((item) => item.name.toLowerCase() === name.toLowerCase());
     const detectedExpiry = nearestExpiryForWord(entry.word, dates);
-    const inferredExpiry = !detectedExpiry && rule
+    const inferredExpiry = !detectedExpiry && rule && entry.score >= MIN_INFERRED_EXPIRY_SCORE
       ? formatDate(inferExpiryDate(referenceDate, rule.shelfLifeDays))
       : null;
 
@@ -106,12 +141,14 @@ export async function analyzeFridgePhoto(
         detectedExpiry,
         inferredExpiry,
         confidence: Number((0.5 + entry.score * 0.45).toFixed(2)),
+        detectionSource: "ocr",
+        expirySource: detectedExpiry ? "ocr" : inferredExpiry ? "rule" : "none",
         bbox: entry.word.bbox,
         notes: detectedExpiry
           ? "Expiry inferred from nearby OCR text."
           : inferredExpiry
             ? "No explicit date found; shelf-life rule applied."
-            : "Detected from keyword match."
+            : "Detected from a high-confidence OCR keyword match."
       });
     }
   }

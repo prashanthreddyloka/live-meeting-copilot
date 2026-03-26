@@ -5,6 +5,8 @@ export type PantryItem = {
   detectedExpiry?: string | null;
   inferredExpiry?: string | null;
   confidence: number;
+  detectionSource?: "visual" | "ocr" | "merged" | "manual";
+  expirySource?: "ocr" | "rule" | "none";
   bbox?: { x: number; y: number; width: number; height: number };
   notes?: string;
 };

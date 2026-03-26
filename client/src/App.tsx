@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { demoItems, demoPlan, demoRecipes } from "./data/demo";
 import { fetchRecipes, fetchWasteSeries, fetchWeekPlan, uploadPhoto } from "./lib/api";
+import { detectVisibleItems, mergeDetectedItems } from "./lib/visualHeuristics";
 import { Dashboard } from "./pages/Dashboard";
 import { Fridge } from "./pages/Fridge";
 import { Landing } from "./pages/Landing";
@@ -81,8 +82,12 @@ function App() {
     setBusy(true);
     setAppError(null);
     try {
-      const uploadedItems = await uploadPhoto(file);
-      if (uploadedItems.length === 0) {
+      const [uploadedItems, heuristicItems] = await Promise.all([
+        uploadPhoto(file),
+        detectVisibleItems(file).catch(() => [])
+      ]);
+      const mergedItems = mergeDetectedItems(uploadedItems, heuristicItems);
+      if (mergedItems.length === 0) {
         setItems([]);
         setRecipes([]);
         setDayPlans([]);
@@ -91,10 +96,10 @@ function App() {
         return;
       }
 
-      setItems(uploadedItems);
-      const nextRecipes = await fetchRecipes(uploadedItems);
+      setItems(mergedItems);
+      const nextRecipes = await fetchRecipes(mergedItems);
       setRecipes(nextRecipes);
-      const planned = await fetchWeekPlan(uploadedItems, {
+      const planned = await fetchWeekPlan(mergedItems, {
         mealsPerDay: 1,
         skipDays: [],
         preferCuisineTags: ["quick", "comfort"],
@@ -187,6 +192,7 @@ function App() {
                   element={
                     <Fridge
                       items={items}
+                      onAddItem={(item) => setItems((current) => [item, ...current])}
                       onUpdateItem={(id, updates) =>
                         setItems((current) => current.map((item) => (item.id === id ? { ...item, ...updates } : item)))
                       }
