@@ -49,6 +49,7 @@ function App() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [dayPlans, setDayPlans] = useState<DayPlan[]>([]);
   const [busy, setBusy] = useState(false);
+  const [recipesBusy, setRecipesBusy] = useState(false);
   const [timeseries, setTimeseries] = useState<Array<{ date: string; wasteScore: number; recipeTitle?: string }>>(
     demoPlan.map((day) => ({ date: day.scheduledDate, wasteScore: day.wasteScore, recipeTitle: day.recipe.title }))
   );
@@ -115,6 +116,26 @@ function App() {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function generateRecipesForCurrentItems() {
+    setRecipesBusy(true);
+    setAppError(null);
+    try {
+      const nextRecipes = await fetchRecipes(items);
+      setRecipes(nextRecipes);
+      navigate("/recipes");
+    } catch (error) {
+      console.warn("Recipe generation failed.", error);
+      setAppError("We could not generate recipes from the current fridge items right now. Please try again.");
+    } finally {
+      setRecipesBusy(false);
+    }
+  }
+
+  function updateItems(updater: (current: PantryItem[]) => PantryItem[]) {
+    setItems((current) => updater(current));
+    setRecipes([]);
   }
 
   useEffect(() => {
@@ -192,9 +213,11 @@ function App() {
                   element={
                     <Fridge
                       items={items}
-                      onAddItem={(item) => setItems((current) => [item, ...current])}
+                      onAddItem={(item) => updateItems((current) => [item, ...current])}
+                      onGenerateRecipes={generateRecipesForCurrentItems}
+                      generatingRecipes={recipesBusy}
                       onUpdateItem={(id, updates) =>
-                        setItems((current) => current.map((item) => (item.id === id ? { ...item, ...updates } : item)))
+                        updateItems((current) => current.map((item) => (item.id === id ? { ...item, ...updates } : item)))
                       }
                     />
                   }

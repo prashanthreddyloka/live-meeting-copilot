@@ -15,6 +15,8 @@ export type Recipe = {
   id: string;
   title: string;
   tags: string[];
+  country?: string;
+  continent?: string;
   cookTime: number;
   steps: string[];
   ingredients: Array<{ name: string; qty: string; optional?: boolean }>;

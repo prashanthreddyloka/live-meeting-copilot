@@ -37,6 +37,8 @@ export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
           <SparklesIcon className="h-4 w-4" />
           Score {recipe.score ?? 0}
         </span>
+        {recipe.country ? <span>{recipe.country}</span> : null}
+        {recipe.continent ? <span>{recipe.continent}</span> : null}
       </div>
 
       <p className="mt-4 text-sm text-slate-600">Uses {recipe.ingredients.map((ingredient) => ingredient.name).join(", ")}.</p>

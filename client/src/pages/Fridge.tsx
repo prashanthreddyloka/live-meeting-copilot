@@ -6,9 +6,11 @@ type FridgeProps = {
   items: PantryItem[];
   onUpdateItem: (id: string, updates: Partial<PantryItem>) => void;
   onAddItem: (item: PantryItem) => void;
+  onGenerateRecipes: () => Promise<void> | void;
+  generatingRecipes?: boolean;
 };
 
-export function Fridge({ items, onUpdateItem, onAddItem }: FridgeProps) {
+export function Fridge({ items, onUpdateItem, onAddItem, onGenerateRecipes, generatingRecipes }: FridgeProps) {
   const [draftName, setDraftName] = useState("");
   const [draftQuantity, setDraftQuantity] = useState("");
   const [draftExpiry, setDraftExpiry] = useState("");
@@ -71,7 +73,17 @@ export function Fridge({ items, onUpdateItem, onAddItem }: FridgeProps) {
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-teal-700">Fridge review</p>
           <h1 className="mt-2 font-display text-4xl text-ink">Detected ingredients</h1>
         </div>
-        <div className="rounded-full bg-white/80 px-4 py-2 text-sm text-slate-500 shadow-sm">Edit dates or add missing items before generating the week quest</div>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => void onGenerateRecipes()}
+            disabled={generatingRecipes || items.length === 0}
+            className="rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:bg-slate-300"
+          >
+            {generatingRecipes ? "Generating..." : "Get Recipes"}
+          </button>
+          <div className="rounded-full bg-white/80 px-4 py-2 text-sm text-slate-500 shadow-sm">Edit dates or add missing items before generating the week quest</div>
+        </div>
       </div>
 
       <div className="rounded-[2rem] border border-white/70 bg-white/85 p-5 shadow-float">

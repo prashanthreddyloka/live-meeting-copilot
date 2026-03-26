@@ -28,7 +28,7 @@ const recipes = [
   {
     id: "recipe-creamy-spinach-pasta",
     title: "Creamy Spinach Pasta",
-    tags: "comfort,italian,quick",
+    tags: "comfort,italian,quick,country:Italy,continent:Europe",
     cookTime: 25,
     ingredients: [
       { name: "pasta", qty: "8 oz" },
@@ -42,7 +42,7 @@ const recipes = [
   {
     id: "recipe-garden-frittata",
     title: "Garden Frittata",
-    tags: "breakfast,vegetarian,protein",
+    tags: "breakfast,vegetarian,protein,country:Italy,continent:Europe",
     cookTime: 20,
     ingredients: [
       { name: "eggs", qty: "6" },
@@ -56,7 +56,7 @@ const recipes = [
   {
     id: "recipe-sheet-pan-chicken",
     title: "Sheet Pan Chicken and Veg",
-    tags: "protein,weeknight,american",
+    tags: "protein,weeknight,american,country:United States,continent:North America",
     cookTime: 35,
     ingredients: [
       { name: "chicken", qty: "1 lb" },
@@ -69,7 +69,7 @@ const recipes = [
   {
     id: "recipe-salmon-rice-bowl",
     title: "Salmon Rice Bowl",
-    tags: "protein,asian,balanced",
+    tags: "protein,asian,balanced,country:Japan,continent:Asia",
     cookTime: 30,
     ingredients: [
       { name: "salmon", qty: "2 fillets" },
@@ -83,7 +83,7 @@ const recipes = [
   {
     id: "recipe-tofu-stir-fry",
     title: "Crispy Tofu Stir Fry",
-    tags: "vegetarian,asian,quick",
+    tags: "vegetarian,asian,quick,country:China,continent:Asia",
     cookTime: 25,
     ingredients: [
       { name: "tofu", qty: "14 oz" },
@@ -97,7 +97,7 @@ const recipes = [
   {
     id: "recipe-berry-yogurt-parfait",
     title: "Berry Yogurt Parfait",
-    tags: "breakfast,quick,sweet",
+    tags: "breakfast,quick,sweet,country:France,continent:Europe",
     cookTime: 10,
     ingredients: [
       { name: "yogurt", qty: "1 cup" },
@@ -110,7 +110,7 @@ const recipes = [
   {
     id: "recipe-loaded-tortilla-melts",
     title: "Loaded Tortilla Melts",
-    tags: "quick,mexican,comfort",
+    tags: "quick,mexican,comfort,country:Mexico,continent:North America",
     cookTime: 15,
     ingredients: [
       { name: "tortillas", qty: "4" },
@@ -124,7 +124,7 @@ const recipes = [
   {
     id: "recipe-kimchi-fried-rice",
     title: "Kimchi Fried Rice",
-    tags: "asian,quick,fermented",
+    tags: "asian,quick,fermented,country:Korea,continent:Asia",
     cookTime: 20,
     ingredients: [
       { name: "rice", qty: "2 cups cooked" },
@@ -133,6 +133,239 @@ const recipes = [
       { name: "scallions", qty: "2", optional: true }
     ],
     steps: ["Saute kimchi.", "Add rice.", "Top with eggs and scallions."]
+  },
+  {
+    id: "recipe-masala-omelette",
+    title: "Masala Omelette",
+    tags: "breakfast,quick,indian,country:India,continent:Asia",
+    cookTime: 15,
+    ingredients: [
+      { name: "eggs", qty: "3" },
+      { name: "onion", qty: "1/2", optional: true },
+      { name: "tomato", qty: "1", optional: true },
+      { name: "cilantro", qty: "2 tbsp", optional: true }
+    ],
+    steps: ["Whisk eggs with chopped vegetables.", "Cook in a skillet until set.", "Fold and serve hot."]
+  },
+  {
+    id: "recipe-egg-bhurji",
+    title: "Egg Bhurji",
+    tags: "breakfast,indian,quick,protein,country:India,continent:Asia",
+    cookTime: 18,
+    ingredients: [
+      { name: "eggs", qty: "4" },
+      { name: "onion", qty: "1", optional: true },
+      { name: "tomato", qty: "1", optional: true },
+      { name: "scallions", qty: "2", optional: true }
+    ],
+    steps: ["Saute aromatics.", "Add tomatoes and cook down.", "Scramble eggs into the masala and serve."]
+  },
+  {
+    id: "recipe-aloo-paratha-skillet",
+    title: "Aloo Paratha Skillet",
+    tags: "indian,comfort,flatbread,country:India,continent:Asia",
+    cookTime: 25,
+    ingredients: [
+      { name: "potato", qty: "2" },
+      { name: "onion", qty: "1/2", optional: true },
+      { name: "cilantro", qty: "2 tbsp", optional: true },
+      { name: "butter", qty: "1 tbsp", optional: true }
+    ],
+    steps: ["Mash cooked potatoes with aromatics.", "Spread over flatbread or toast in a skillet.", "Serve with yogurt or pickle."]
+  },
+  {
+    id: "recipe-palak-paneer-style",
+    title: "Palak Paneer Style Greens",
+    tags: "indian,vegetarian,curry,country:India,continent:Asia",
+    cookTime: 30,
+    ingredients: [
+      { name: "spinach", qty: "4 cups" },
+      { name: "cheese", qty: "1 cup" },
+      { name: "cream", qty: "2 tbsp", optional: true },
+      { name: "garlic", qty: "2 cloves", optional: true }
+    ],
+    steps: ["Cook spinach until wilted.", "Blend or mash into a coarse puree.", "Simmer with cheese cubes and finish with cream."]
+  },
+  {
+    id: "recipe-veg-pulao",
+    title: "Vegetable Pulao",
+    tags: "indian,rice,one-pot,country:India,continent:Asia",
+    cookTime: 30,
+    ingredients: [
+      { name: "rice", qty: "1 cup" },
+      { name: "carrots", qty: "2", optional: true },
+      { name: "peas", qty: "1/2 cup", optional: true },
+      { name: "onion", qty: "1/2", optional: true }
+    ],
+    steps: ["Saute vegetables and aromatics.", "Add rice and water.", "Cook until fluffy and fragrant."]
+  },
+  {
+    id: "recipe-tomato-rice",
+    title: "Tomato Rice",
+    tags: "indian,rice,quick,country:India,continent:Asia",
+    cookTime: 25,
+    ingredients: [
+      { name: "rice", qty: "2 cups cooked" },
+      { name: "tomato", qty: "2" },
+      { name: "onion", qty: "1/2", optional: true },
+      { name: "peas", qty: "1/2 cup", optional: true }
+    ],
+    steps: ["Cook tomatoes into a spiced base.", "Fold in rice.", "Steam briefly and serve."]
+  },
+  {
+    id: "recipe-lemon-rice",
+    title: "Lemon Rice",
+    tags: "indian,rice,quick,country:India,continent:Asia",
+    cookTime: 15,
+    ingredients: [
+      { name: "rice", qty: "2 cups cooked" },
+      { name: "lemon", qty: "1" },
+      { name: "peas", qty: "1/2 cup", optional: true },
+      { name: "scallions", qty: "2", optional: true }
+    ],
+    steps: ["Warm rice with tempering ingredients.", "Finish with fresh lemon juice.", "Serve as a quick meal or side."]
+  },
+  {
+    id: "recipe-moong-dal-style-lentils",
+    title: "Simple Dal Tadka",
+    tags: "indian,dal,comfort,country:India,continent:Asia",
+    cookTime: 35,
+    ingredients: [
+      { name: "lentils", qty: "1 cup" },
+      { name: "onion", qty: "1/2", optional: true },
+      { name: "tomato", qty: "1", optional: true },
+      { name: "garlic", qty: "2 cloves", optional: true }
+    ],
+    steps: ["Cook lentils until soft.", "Prepare a quick tempering with aromatics.", "Fold together and simmer."]
+  },
+  {
+    id: "recipe-chana-masala-style",
+    title: "Chana Masala Style Chickpeas",
+    tags: "indian,protein,curry,country:India,continent:Asia",
+    cookTime: 30,
+    ingredients: [
+      { name: "chickpeas", qty: "2 cups" },
+      { name: "tomato", qty: "2" },
+      { name: "onion", qty: "1", optional: true },
+      { name: "cilantro", qty: "2 tbsp", optional: true }
+    ],
+    steps: ["Cook onions and tomatoes into a masala.", "Simmer chickpeas in the sauce.", "Finish with herbs."]
+  },
+  {
+    id: "recipe-rajma-style-beans",
+    title: "Rajma Style Beans",
+    tags: "indian,beans,comfort,country:India,continent:Asia",
+    cookTime: 35,
+    ingredients: [
+      { name: "beans", qty: "2 cups" },
+      { name: "tomato", qty: "2" },
+      { name: "onion", qty: "1", optional: true },
+      { name: "rice", qty: "2 cups cooked", optional: true }
+    ],
+    steps: ["Build a tomato-onion masala.", "Simmer beans until coated and rich.", "Serve with rice."]
+  },
+  {
+    id: "recipe-aloo-gobi-style",
+    title: "Aloo Gobi Style Saute",
+    tags: "indian,sabzi,vegetarian,country:India,continent:Asia",
+    cookTime: 28,
+    ingredients: [
+      { name: "potato", qty: "2" },
+      { name: "cauliflower", qty: "2 cups" },
+      { name: "onion", qty: "1/2", optional: true },
+      { name: "cilantro", qty: "2 tbsp", optional: true }
+    ],
+    steps: ["Saute potatoes until they start to color.", "Add cauliflower and cook covered.", "Finish with herbs."]
+  },
+  {
+    id: "recipe-bhindi-style-peppers",
+    title: "Masala Pepper Saute",
+    tags: "indian,sabzi,quick,country:India,continent:Asia",
+    cookTime: 20,
+    ingredients: [
+      { name: "bell pepper", qty: "2" },
+      { name: "onion", qty: "1/2", optional: true },
+      { name: "tomato", qty: "1", optional: true }
+    ],
+    steps: ["Saute peppers with onions.", "Add tomato and cook until lightly jammy.", "Serve as a quick sabzi."]
+  },
+  {
+    id: "recipe-paneer-bhurji-style",
+    title: "Cheese Bhurji Toast Filling",
+    tags: "indian,quick,breakfast,country:India,continent:Asia",
+    cookTime: 15,
+    ingredients: [
+      { name: "cheese", qty: "1 cup" },
+      { name: "tomato", qty: "1", optional: true },
+      { name: "onion", qty: "1/2", optional: true },
+      { name: "cilantro", qty: "2 tbsp", optional: true }
+    ],
+    steps: ["Crumble or grate cheese.", "Cook with quick masala aromatics.", "Serve with toast or flatbread."]
+  },
+  {
+    id: "recipe-curd-rice-style",
+    title: "Yogurt Rice Bowl",
+    tags: "indian,comfort,quick,country:India,continent:Asia",
+    cookTime: 10,
+    ingredients: [
+      { name: "rice", qty: "2 cups cooked" },
+      { name: "yogurt", qty: "1 cup" },
+      { name: "cucumber", qty: "1", optional: true },
+      { name: "carrots", qty: "1", optional: true }
+    ],
+    steps: ["Mix yogurt into cooled rice.", "Add chopped vegetables.", "Serve chilled or at room temperature."]
+  },
+  {
+    id: "recipe-upma-style-bread-skillet",
+    title: "Savory Bread Upma Style Skillet",
+    tags: "indian,breakfast,snack,country:India,continent:Asia",
+    cookTime: 15,
+    ingredients: [
+      { name: "bread", qty: "4 slices" },
+      { name: "onion", qty: "1/2", optional: true },
+      { name: "tomato", qty: "1", optional: true },
+      { name: "peas", qty: "1/2 cup", optional: true }
+    ],
+    steps: ["Toast bread pieces lightly.", "Cook vegetables quickly.", "Toss together and serve hot."]
+  },
+  {
+    id: "recipe-masala-toastie",
+    title: "Masala Cheese Toastie",
+    tags: "indian,snack,quick,country:India,continent:Asia",
+    cookTime: 12,
+    ingredients: [
+      { name: "bread", qty: "4 slices" },
+      { name: "cheese", qty: "1 cup" },
+      { name: "tomato", qty: "1", optional: true },
+      { name: "onion", qty: "1/4", optional: true }
+    ],
+    steps: ["Layer bread with cheese and masala vegetables.", "Toast until crisp and melty.", "Slice and serve."]
+  },
+  {
+    id: "recipe-vegetable-uttapam-style",
+    title: "Savory Veg Pancake Style Breakfast",
+    tags: "indian,breakfast,south-indian,country:India,continent:Asia",
+    cookTime: 20,
+    ingredients: [
+      { name: "onion", qty: "1/2", optional: true },
+      { name: "tomato", qty: "1", optional: true },
+      { name: "bell pepper", qty: "1", optional: true },
+      { name: "cilantro", qty: "2 tbsp", optional: true }
+    ],
+    steps: ["Spread batter or savory base in a pan.", "Top with chopped vegetables.", "Cook until golden on both sides."]
+  },
+  {
+    id: "recipe-vegetable-korma-style",
+    title: "Vegetable Korma Style Curry",
+    tags: "indian,curry,vegetarian,country:India,continent:Asia",
+    cookTime: 35,
+    ingredients: [
+      { name: "carrots", qty: "2", optional: true },
+      { name: "peas", qty: "1/2 cup", optional: true },
+      { name: "potato", qty: "2", optional: true },
+      { name: "cream", qty: "1/4 cup", optional: true }
+    ],
+    steps: ["Cook vegetables until tender.", "Simmer in a creamy spiced sauce.", "Serve with rice or bread."]
   }
 ];
 
