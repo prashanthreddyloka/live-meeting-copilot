@@ -52,14 +52,23 @@ export function Planner({ dayPlans, onReorder }: PlannerProps) {
 
       <div className="relative rounded-[2.2rem] border border-slate-200 bg-gradient-to-b from-white/90 to-mist/40 p-5 sm:p-8">
         <div className="absolute left-8 top-8 h-[calc(100%-4rem)] w-px bg-gradient-to-b from-teal-200 via-coral/30 to-transparent" />
-        <div className="space-y-5">
-          {dayPlans.map((dayPlan, index) => (
-            <div key={`${dayPlan.scheduledDate}-${dayPlan.recipe.id}`} className="relative pl-8">
-              <div className="absolute left-[1.2rem] top-10 h-3 w-3 rounded-full bg-coral ring-4 ring-white" />
-              <DayCard dayPlan={dayPlan} index={index} onDragStart={setDragIndex} onDrop={handleDrop} />
-            </div>
-          ))}
-        </div>
+        {dayPlans.length === 0 ? (
+          <div className="rounded-[1.8rem] border border-dashed border-slate-300 bg-white/70 p-10 text-center">
+            <h2 className="font-display text-3xl text-ink">No recipes in the planner yet</h2>
+            <p className="mt-3 text-sm leading-7 text-slate-600">
+              Add a recipe from the Recipes page and it will appear here with steps, reasoning, and a related video link.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {dayPlans.map((dayPlan, index) => (
+              <div key={`${dayPlan.scheduledDate}-${dayPlan.recipe.id}`} className="relative pl-8">
+                <div className="absolute left-[1.2rem] top-10 h-3 w-3 rounded-full bg-coral ring-4 ring-white" />
+                <DayCard dayPlan={dayPlan} index={index} onDragStart={setDragIndex} onDrop={handleDrop} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

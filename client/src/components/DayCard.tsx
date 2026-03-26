@@ -9,6 +9,8 @@ type DayCardProps = {
 };
 
 export function DayCard({ dayPlan, index, onDragStart, onDrop }: DayCardProps) {
+  const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${dayPlan.recipe.title} recipe`)}`;
+
   return (
     <motion.article
       layout
@@ -42,6 +44,23 @@ export function DayCard({ dayPlan, index, onDragStart, onDrop }: DayCardProps) {
 
       <div className="mt-5 rounded-2xl bg-oat p-3 text-sm text-slate-600">
         Waste score after this cook: <span className="font-semibold text-ink">{dayPlan.wasteScore}</span>
+      </div>
+
+      <div className="mt-4 rounded-2xl bg-mist p-4">
+        <p className="text-sm font-semibold text-ink">How to cook it</p>
+        <ol className="mt-3 space-y-2 text-sm text-slate-600">
+          {dayPlan.recipe.steps.map((step, stepIndex) => (
+            <li key={`${dayPlan.recipe.id}-planner-step-${stepIndex}`}>{stepIndex + 1}. {step}</li>
+          ))}
+        </ol>
+        <a
+          href={youtubeSearchUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-4 inline-block text-sm font-semibold text-teal-700 underline-offset-4 hover:underline"
+        >
+          Related YouTube videos
+        </a>
       </div>
     </motion.article>
   );

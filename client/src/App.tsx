@@ -210,6 +210,26 @@ function App() {
     setRecipes([]);
   }
 
+  function addRecipeToPlan(recipe: Recipe) {
+    const nextDate = new Date();
+    nextDate.setDate(nextDate.getDate() + dayPlans.length);
+    const scheduledDate = nextDate.toISOString().slice(0, 10);
+
+    setDayPlans((current) => [
+      ...current,
+      {
+        scheduledDate,
+        recipe,
+        itemsConsumed: recipe.ingredients.map((ingredient) => ingredient.name),
+        priority: recipe.score ?? 70,
+        reasoning: "Added manually from recipe suggestions based on your latest fridge items.",
+        leftovers: [],
+        wasteScore: 88
+      }
+    ]);
+    navigate("/planner");
+  }
+
   useEffect(() => {
     async function refreshWasteSeries() {
       try {
@@ -355,20 +375,7 @@ function App() {
                   element={
                     <Recipes
                       recipes={recipes}
-                      onAddToPlan={(recipe) =>
-                        setDayPlans((current) => [
-                          ...current,
-                          {
-                            scheduledDate: new Date().toISOString().slice(0, 10),
-                            recipe,
-                            itemsConsumed: recipe.ingredients.map((ingredient) => ingredient.name),
-                            priority: recipe.score ?? 70,
-                            reasoning: "Added manually from recipe suggestions.",
-                            leftovers: [],
-                            wasteScore: 88
-                          }
-                        ])
-                      }
+                      onAddToPlan={addRecipeToPlan}
                     />
                   }
                 />

@@ -1,5 +1,6 @@
 import { ClockIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import type { Recipe } from "../types";
 
 type RecipeCardProps = {
@@ -8,6 +9,9 @@ type RecipeCardProps = {
 };
 
 export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
+  const [showRecipe, setShowRecipe] = useState(false);
+  const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${recipe.title} recipe`)}`;
+
   return (
     <motion.article
       layout
@@ -47,14 +51,42 @@ export function RecipeCard({ recipe, onAdd }: RecipeCardProps) {
         <div className="mt-4 rounded-2xl bg-mist p-3 text-sm text-slate-600">{recipe.substitutionSuggestions[0]}</div>
       ) : null}
 
-      {onAdd ? (
+      <div className="mt-5 flex flex-wrap gap-3">
         <button
           type="button"
-          onClick={() => onAdd(recipe)}
-          className="mt-5 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-900"
+          onClick={() => setShowRecipe((current) => !current)}
+          className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
         >
-          Add to plan
+          {showRecipe ? "Hide recipe" : "Show recipe"}
         </button>
+        {onAdd ? (
+          <button
+            type="button"
+            onClick={() => onAdd(recipe)}
+            className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-900"
+          >
+            Add to plan
+          </button>
+        ) : null}
+      </div>
+
+      {showRecipe ? (
+        <div className="mt-4 rounded-2xl bg-oat p-4">
+          <p className="text-sm font-semibold text-ink">Steps</p>
+          <ol className="mt-3 space-y-2 text-sm text-slate-600">
+            {recipe.steps.map((step, index) => (
+              <li key={`${recipe.id}-step-${index}`}>{index + 1}. {step}</li>
+            ))}
+          </ol>
+          <a
+            href={youtubeSearchUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-block text-sm font-semibold text-teal-700 underline-offset-4 hover:underline"
+          >
+            Watch related YouTube videos
+          </a>
+        </div>
       ) : null}
     </motion.article>
   );
