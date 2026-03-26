@@ -32,6 +32,17 @@ WasteNotChef is a camera-first PWA-style web app for turning a quick fridge phot
 - `npm run build` builds the server and client.
 - `npm run prisma:seed` reseeds ingredient rules and recipes.
 
+## AI chat setup
+- The in-app chat supports Gemini or OpenAI through a backend proxy route.
+- Set `AI_PROVIDER=gemini` to use Gemini or `AI_PROVIDER=openai` to use OpenAI.
+- Gemini setup:
+  - `GEMINI_API_KEY=...`
+  - optional `GEMINI_MODEL=gemini-2.5-flash`
+- OpenAI setup:
+  - `OPENAI_API_KEY=...`
+  - optional `OPENAI_MODEL=gpt-4.1-mini`
+- The chat route is server-side, so API keys stay off the client.
+
 ## Publish for a sharable link
 Recommended setup:
 

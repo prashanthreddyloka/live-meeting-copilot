@@ -4,6 +4,7 @@ import { Link, Route, Routes, useLocation, useNavigate } from "react-router-dom"
 import { demoItems, demoPlan, demoRecipes } from "./data/demo";
 import { fetchRecipes, fetchWasteSeries, fetchWeekPlan, uploadPhoto } from "./lib/api";
 import { detectVisibleItems, mergeDetectedItems } from "./lib/visualHeuristics";
+import { ChatWidget } from "./components/ChatWidget";
 import { Dashboard } from "./pages/Dashboard";
 import { Fridge } from "./pages/Fridge";
 import { Landing } from "./pages/Landing";
@@ -397,6 +398,7 @@ function App() {
           </AnimatePresence>
         </main>
       </div>
+      <ChatWidget currentPage={location.pathname} pantryItems={items} />
     </div>
   );
 }
