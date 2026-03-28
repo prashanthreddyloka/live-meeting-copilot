@@ -2,9 +2,15 @@ node_modules
 dist
 client/dist
 client/node_modules
+server/node_modules
 .env
+server/.env
+client/.env
 prisma/dev.db
 prisma/dev.db-journal
 coverage
 .DS_Store
 tmp
+.npm-cache
+node-v22.14.0-win-x64
+node-v22.14.0-win-x64.zip
