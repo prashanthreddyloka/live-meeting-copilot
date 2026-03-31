@@ -31,6 +31,7 @@ const diagnosisPrompt =
 
 const sanitizeJsonText = (text) => text.replace(/```json|```/gi, '').trim();
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+const parseJsonResponse = (text) => JSON.parse(sanitizeJsonText(text));
 
 const normalizeDiagnosis = (raw) => ({
   plantName: raw.plantName || 'Unknown Plant',
@@ -92,6 +93,17 @@ const searchWikipediaPlant = async (query) => {
   return getWikipediaSummary(topMatch);
 };
 
+const safeWikipediaLookup = async (query) => {
+  try {
+    if (!query || !query.trim()) {
+      return null;
+    }
+    return await searchWikipediaPlant(query.trim());
+  } catch (error) {
+    return null;
+  }
+};
+
 const callGemini = async (parts) => {
   if (!GEMINI_API_KEY) {
     throw new Error('GEMINI_API_KEY is missing');
@@ -144,7 +156,7 @@ app.post('/api/diagnose', async (req, res) => {
       { inlineData: { mimeType, data: imageBase64 } }
     ]);
 
-    const parsed = JSON.parse(sanitizeJsonText(responseText));
+    const parsed = parseJsonResponse(responseText);
     return res.json(normalizeDiagnosis(parsed));
   } catch (error) {
     return res.status(500).json({ error: 'Diagnosis failed. Please try again.' });
@@ -153,13 +165,50 @@ app.post('/api/diagnose', async (req, res) => {
 
 app.post('/api/explore-plant', async (req, res) => {
   try {
-    const { prompt } = req.body;
+    const { prompt, imageBase64, mimeType } = req.body;
 
-    if (!prompt || !prompt.trim()) {
+    if ((!prompt || !prompt.trim()) && (!imageBase64 || !mimeType)) {
       return res.status(400).json({ error: 'Plant search failed. Please try again.' });
     }
 
-    const wiki = await searchWikipediaPlant(prompt.trim());
+    const identifyParts = [
+      {
+        text: `Return only raw valid JSON:
+{
+  "identifiedPlantName": "string",
+  "commonName": "string",
+  "headline": "string",
+  "userQuestionSummary": "string",
+  "history": "string with 1-2 paragraphs",
+  "interestingFacts": ["3 short facts"],
+  "careBasics": {
+    "water": "string",
+    "light": "string",
+    "soil": "string",
+    "climate": "string"
+  },
+  "answerConfidence": "number 0-100"
+}
+
+If the user provided an image, identify the plant as accurately as possible. If the plant cannot be identified with confidence, say so gently but still provide the best likely match.
+User prompt: ${prompt?.trim() || 'Identify this plant and explain it simply.'}`
+      }
+    ];
+
+    if (imageBase64 && mimeType) {
+      identifyParts.push({
+        inlineData: { mimeType, data: imageBase64 }
+      });
+    }
+
+    const identifyResponseText = await callGemini(identifyParts);
+    const identified = parseJsonResponse(identifyResponseText);
+    const plantName =
+      identified.identifiedPlantName ||
+      identified.commonName ||
+      prompt?.trim() ||
+      'Unknown plant';
+    const wiki = await safeWikipediaLookup(plantName);
     const explorerPrompt = `
 Return only raw valid JSON with this shape:
 {
@@ -176,38 +225,87 @@ Return only raw valid JSON with this shape:
   "userPromptReply": "short engaging answer that directly addresses the user's request"
 }
 
-Plant the user asked about: ${prompt.trim()}
-Title: ${wiki.title || prompt.trim()}
-Description: ${wiki.description || ''}
-Summary: ${wiki.extract || ''}
+Plant the user asked about: ${prompt?.trim() || plantName}
+Best identified plant: ${plantName}
+Identified common name: ${identified.commonName || ''}
+Model summary: ${identified.userQuestionSummary || ''}
+Model history: ${identified.history || ''}
+Title: ${wiki?.title || plantName}
+Description: ${wiki?.description || ''}
+Summary: ${wiki?.extract || ''}
 `;
 
     const responseText = await callGemini([{ text: explorerPrompt }]);
-    const parsed = JSON.parse(sanitizeJsonText(responseText));
+    const parsed = parseJsonResponse(responseText);
 
     return res.json({
-      plantName: parsed.plantName || wiki.title || prompt.trim(),
-      headline: parsed.headline || wiki.description || 'Plant profile',
-      history: parsed.history || wiki.extract || 'No history available.',
+      plantName: parsed.plantName || plantName,
+      headline: parsed.headline || identified.headline || wiki?.description || 'Plant profile',
+      history: parsed.history || identified.history || wiki?.extract || 'No history available.',
       interestingFacts: Array.isArray(parsed.interestingFacts) ? parsed.interestingFacts.slice(0, 3) : [],
       careBasics: {
-        water: parsed.careBasics?.water || 'Water according to species needs.',
-        light: parsed.careBasics?.light || 'Match the plant with its preferred light level.',
-        soil: parsed.careBasics?.soil || 'Use soil suited to this plant type.',
-        climate: parsed.careBasics?.climate || 'Keep conditions stable and seasonally appropriate.'
+        water: parsed.careBasics?.water || identified.careBasics?.water || 'Water according to species needs.',
+        light: parsed.careBasics?.light || identified.careBasics?.light || 'Match the plant with its preferred light level.',
+        soil: parsed.careBasics?.soil || identified.careBasics?.soil || 'Use soil suited to this plant type.',
+        climate:
+          parsed.careBasics?.climate ||
+          identified.careBasics?.climate ||
+          'Keep conditions stable and seasonally appropriate.'
       },
       userPromptReply:
-        parsed.userPromptReply || `Here is a quick profile for ${wiki.title || prompt.trim()}.`,
+        parsed.userPromptReply ||
+        `Here is a quick profile for ${plantName}.`,
       imageUrl:
-        wiki.originalimage?.source ||
-        wiki.thumbnail?.source ||
+        wiki?.originalimage?.source ||
+        wiki?.thumbnail?.source ||
         'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Placeholder_view_vector.svg/512px-Placeholder_view_vector.svg.png',
       wikipediaUrl:
-        wiki.content_urls?.desktop?.page ||
-        `https://en.wikipedia.org/wiki/${encodeURIComponent(wiki.title || prompt.trim())}`
+        wiki?.content_urls?.desktop?.page ||
+        `https://en.wikipedia.org/wiki/${encodeURIComponent(plantName)}`
     });
   } catch (error) {
     return res.status(500).json({ error: 'Plant search failed. Please try again.' });
+  }
+});
+
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { prompt, history = [] } = req.body;
+
+    if (!prompt || !prompt.trim()) {
+      return res.status(400).json({ error: 'Chat failed. Please try again.' });
+    }
+
+    const transcript = Array.isArray(history)
+      ? history
+          .slice(-8)
+          .map((message) => `${message.role === 'assistant' ? 'Assistant' : 'User'}: ${message.content}`)
+          .join('\n')
+      : '';
+
+    const responseText = await callGemini([
+      {
+        text: `Return only raw valid JSON:
+{
+  "reply": "string",
+  "suggestedFollowUps": ["3 short suggestions"]
+}
+
+You are PlantAutopsy's plant care assistant. Be practical, warm, and concise. Help with plant identification, care, troubleshooting, pests, watering, repotting, and light conditions.
+Recent chat:
+${transcript || 'No previous messages.'}
+
+User message: ${prompt.trim()}`
+      }
+    ]);
+
+    const parsed = parseJsonResponse(responseText);
+    return res.json({
+      reply: parsed.reply || 'I could not generate a response just now.',
+      suggestedFollowUps: Array.isArray(parsed.suggestedFollowUps) ? parsed.suggestedFollowUps.slice(0, 3) : []
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'Chat failed. Please try again.' });
   }
 });
 

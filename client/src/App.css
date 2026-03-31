@@ -427,6 +427,74 @@ a {
   margin-top: 14px;
 }
 
+.action-row,
+.preview-action-row,
+.chat-suggestion-row,
+.chat-inline-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.action-row,
+.chat-suggestion-row {
+  margin-top: 14px;
+}
+
+.preview-action-row {
+  margin-top: 10px;
+}
+
+.soft-upload-panel {
+  margin-top: 14px;
+  border: 1px solid rgba(62, 124, 47, 0.15);
+  border-radius: 12px;
+  background: #fbf7f2;
+  padding: 12px;
+}
+
+.small-action-button,
+.chat-suggestion-pill,
+.chat-inline-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(62, 124, 47, 0.18);
+  background: #f1f7ee;
+  color: var(--green);
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.small-action-button:hover,
+.chat-suggestion-pill:hover,
+.chat-inline-pill:hover {
+  background: #e7f1e2;
+}
+
+.small-action-button:active,
+.chat-suggestion-pill:active,
+.chat-inline-pill:active {
+  transform: translateY(1px);
+}
+
+.small-action-button:disabled,
+.chat-suggestion-pill:disabled,
+.chat-inline-pill:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.action-icon {
+  width: 18px;
+  height: 18px;
+}
+
 .explorer-result {
   margin-top: 16px;
   display: flex;
@@ -444,6 +512,67 @@ a {
 .explorer-title {
   font-size: 1.4rem;
   letter-spacing: -0.03em;
+}
+
+.chat-card {
+  padding-bottom: 18px;
+}
+
+.chat-panel-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--green);
+}
+
+.chat-thread {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chat-bubble {
+  max-width: 92%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  line-height: 1.5;
+}
+
+.chat-bubble-assistant {
+  align-self: flex-start;
+  background: #f5f8f1;
+  border: 1px solid rgba(62, 124, 47, 0.12);
+}
+
+.chat-bubble-user {
+  align-self: flex-end;
+  background: #efe6dc;
+}
+
+.chat-inline-suggestions {
+  margin-top: 10px;
+}
+
+.chat-input-row {
+  margin-top: 14px;
+}
+
+.chat-textarea {
+  width: 100%;
+  border: 1px solid #d7cec2;
+  border-radius: 12px;
+  background: #fffdfa;
+  min-height: 92px;
+  padding: 13px 14px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font: inherit;
+}
+
+.chat-textarea:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 4px rgba(62, 124, 47, 0.12);
 }
 
 .explorer-link {

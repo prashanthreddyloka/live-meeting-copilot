@@ -19,11 +19,25 @@ export const explorePlant = async (prompt) => {
     const res = await fetch(`${BASE_URL}/api/explore-plant`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify(prompt)
     });
     if (!res.ok) throw new Error('Plant search failed');
     return res.json();
   } catch (error) {
     throw new Error('Plant search failed');
+  }
+};
+
+export const chatWithPlantAssistant = async (prompt, history) => {
+  try {
+    const res = await fetch(`${BASE_URL}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, history })
+    });
+    if (!res.ok) throw new Error('Chat failed');
+    return res.json();
+  } catch (error) {
+    throw new Error('Chat failed');
   }
 };
