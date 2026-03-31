@@ -2,6 +2,8 @@
 
 PlantAutopsy is a full-stack PWA that helps people diagnose plant issues from a photo, understand likely root causes, and follow a practical revival plan. It also includes an interactive plant explorer so users can ask about a random plant, learn its history, and see a representative image.
 
+Live Website: https://plantautopsy.vercel.app/
+
 ## What PlantAutopsy Does
 
 - Upload a plant photo for AI-powered diagnosis
