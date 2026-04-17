@@ -1,6 +1,8 @@
 node_modules
 dist
+build
 client/dist
+client/build
 client/node_modules
 server/node_modules
 .env
@@ -14,3 +16,9 @@ tmp
 .npm-cache
 node-v22.14.0-win-x64
 node-v22.14.0-win-x64.zip
+python-3.11.9-amd64.exe
+*.log
+__pycache__/
+*.pyc
+.venv/
+venv/
