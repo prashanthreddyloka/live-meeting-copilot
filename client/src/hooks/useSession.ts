@@ -232,14 +232,15 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
         timestamp: new Date().toISOString(),
       };
 
-      const nextHistory = [...chatHistoryRef.current, userMessage, assistantMessage];
+      const requestHistory = [...chatHistoryRef.current, userMessage];
+      const nextHistory = [...requestHistory, assistantMessage];
       setChatHistory(nextHistory);
       setIsStreamingChat(true);
       setIsWaitingForFirstToken(true);
 
       try {
         await streamChatCompletion({
-          messages: nextHistory.map((message) => ({
+          messages: requestHistory.map((message) => ({
             role: message.role,
             content: message.content,
           })),
