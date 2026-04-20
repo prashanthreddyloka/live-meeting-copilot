@@ -14,6 +14,7 @@ import type {
 import { useMicRecorder } from './useMicRecorder';
 
 const createId = () => crypto.randomUUID();
+const MIN_TRANSCRIPTION_SECONDS = 10;
 
 const formatElapsed = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
@@ -115,6 +116,14 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
         return;
       }
 
+      if (elapsedSeconds < MIN_TRANSCRIPTION_SECONDS) {
+        addToast(
+          'Recording too short',
+          `Keep recording for at least ${MIN_TRANSCRIPTION_SECONDS} seconds before refreshing or stopping for transcription.`,
+        );
+        return;
+      }
+
       const timestamp = formatElapsed(elapsedSeconds);
       setIsTranscribing(true);
 
@@ -149,7 +158,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
     [addToast, generateSuggestionsForTranscript, hasApiKey, settings.groqApiKey],
   );
 
-  const { isRecording, requestChunk, startRecording, stopRecording } = useMicRecorder({
+  const { isRecording, elapsedSeconds, requestChunk, startRecording, stopRecording } = useMicRecorder({
     chunkIntervalSeconds: settings.transcriptChunkInterval,
     onChunk: handleAudioChunk,
     onPermissionError: (message) => {
@@ -174,6 +183,14 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
       return;
     }
 
+    if (elapsedSeconds < MIN_TRANSCRIPTION_SECONDS) {
+      addToast(
+        'Recording too short',
+        `Wait until at least ${MIN_TRANSCRIPTION_SECONDS} seconds of audio have been captured before refreshing.`,
+      );
+      return;
+    }
+
     const now = Date.now();
 
     if (now - lastManualRefreshRef.current < 1000) {
@@ -182,7 +199,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
 
     lastManualRefreshRef.current = now;
     requestChunk();
-  }, [isRecording, requestChunk]);
+  }, [addToast, elapsedSeconds, isRecording, requestChunk]);
 
   const retrySuggestions = useCallback(async () => {
     const context = lastSuggestionContextRef.current;
@@ -305,6 +322,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
       micError,
       suggestionsError,
       isRecording,
+      currentRecordingSeconds: elapsedSeconds,
       isTranscribing,
       isRefreshingSuggestions,
       isStreamingChat,
@@ -319,6 +337,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
     [
       chatHistory,
       exportSession,
+      elapsedSeconds,
       isRecording,
       isRefreshingSuggestions,
       isStreamingChat,

@@ -13,6 +13,7 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { settings, updateSetting, resetSettings, hasApiKey } = useSettings();
   const session = useSession(settings, hasApiKey);
+  const canManualRefresh = session.isRecording && session.currentRecordingSeconds >= 10;
 
   const handleSuggestionSelect = async (suggestion: Suggestion) => {
     await session.sendChatMessage(suggestion.full_prompt);
@@ -63,7 +64,7 @@ function App() {
             batches={session.suggestionBatches}
             isRefreshing={session.isRefreshingSuggestions}
             disabled={!hasApiKey}
-            canManualRefresh={session.isRecording}
+            canManualRefresh={canManualRefresh}
             error={session.suggestionsError}
             onManualRefresh={session.manualRefresh}
             onRetry={() => void session.retrySuggestions()}

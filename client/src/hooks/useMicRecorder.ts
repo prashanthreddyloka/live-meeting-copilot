@@ -17,6 +17,7 @@ export const useMicRecorder = ({
   const onChunkRef = useRef(onChunk);
   const permissionErrorRef = useRef(onPermissionError);
   const [isRecording, setIsRecording] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
     onChunkRef.current = onChunk;
@@ -29,6 +30,7 @@ export const useMicRecorder = ({
   const cleanup = useCallback(() => {
     mediaRecorderRef.current = null;
     recordingStartedAtRef.current = null;
+    setElapsedSeconds(0);
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
@@ -48,6 +50,7 @@ export const useMicRecorder = ({
       streamRef.current = stream;
       mediaRecorderRef.current = recorder;
       recordingStartedAtRef.current = Date.now();
+      setElapsedSeconds(0);
 
       recorder.ondataavailable = (event) => {
         if (event.data.size === 0) {
@@ -112,8 +115,29 @@ export const useMicRecorder = ({
     [cleanup],
   );
 
+  useEffect(() => {
+    if (!isRecording) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      const startedAt = recordingStartedAtRef.current;
+
+      if (!startedAt) {
+        return;
+      }
+
+      setElapsedSeconds(Math.max(1, Math.round((Date.now() - startedAt) / 1000)));
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [isRecording]);
+
   return {
     isRecording,
+    elapsedSeconds,
     startRecording,
     stopRecording,
     requestChunk,
