@@ -212,7 +212,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
   }, [generateSuggestionsForTranscript]);
 
   const sendChatMessage = useCallback(
-    async (content: string) => {
+    async (content: string, isDetailedAnswer = false) => {
       const trimmed = content.trim();
 
       if (!trimmed || !hasApiKey || isStreamingChat) {
@@ -238,6 +238,9 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
       setIsStreamingChat(true);
       setIsWaitingForFirstToken(true);
 
+      const prompt = isDetailedAnswer ? settings.detailedAnswerPrompt : settings.chatPrompt;
+      const contextWindow = isDetailedAnswer ? settings.detailedContextWindow : settings.chatContextWindow;
+
       try {
         await streamChatCompletion({
           messages: requestHistory.map((message) => ({
@@ -245,8 +248,8 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
             content: message.content,
           })),
           transcript: flattenTranscript(transcriptRef.current),
-          contextWindow: settings.chatContextWindow,
-          prompt: settings.chatPrompt,
+          contextWindow,
+          prompt,
           apiKey: settings.groqApiKey,
           onToken: (token) => {
             setIsWaitingForFirstToken(false);
@@ -280,6 +283,8 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
       isStreamingChat,
       settings.chatContextWindow,
       settings.chatPrompt,
+      settings.detailedAnswerPrompt,
+      settings.detailedContextWindow,
       settings.groqApiKey,
     ],
   );

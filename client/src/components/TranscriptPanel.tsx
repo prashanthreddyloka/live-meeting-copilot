@@ -67,10 +67,11 @@ export const TranscriptPanel = ({
             </p>
             <p className="mt-1 text-sm text-slate-500">
               {isRecording
-                ? `Elapsed ${currentRecordingSeconds}s • next auto-refresh at ${Math.max(
-                    0,
-                    chunkIntervalSeconds - (currentRecordingSeconds % chunkIntervalSeconds || chunkIntervalSeconds),
-                  )}s`
+                ? (() => {
+                    const remainder = currentRecordingSeconds % chunkIntervalSeconds;
+                    const secondsUntilNext = remainder === 0 ? chunkIntervalSeconds : chunkIntervalSeconds - remainder;
+                    return `Elapsed ${currentRecordingSeconds}s • next auto-refresh in ${secondsUntilNext}s`;
+                  })()
                 : 'Auto-refresh and suggestions run every 30 seconds while recording.'}
             </p>
           </div>

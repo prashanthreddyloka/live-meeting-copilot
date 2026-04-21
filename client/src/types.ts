@@ -40,8 +40,10 @@ export interface ToastMessage {
 export interface SettingsState {
   groqApiKey: string;
   suggestionPrompt: string;
+  detailedAnswerPrompt: string;
   chatPrompt: string;
   suggestionContextWindow: number;
+  detailedContextWindow: number;
   chatContextWindow: number;
   transcriptChunkInterval: number;
 }

@@ -20,6 +20,7 @@ export const ChatPanel = ({
 }: ChatPanelProps) => {
   const [draft, setDraft] = useState('');
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -31,16 +32,28 @@ export const ChatPanel = ({
     container.scrollTop = container.scrollHeight;
   }, [isWaitingForFirstToken, messages]);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const submit = async () => {
+    const trimmed = draft.trim();
 
-    if (!draft.trim() || disabled || isStreaming) {
+    if (!trimmed || disabled || isStreaming) {
       return;
     }
 
-    const nextDraft = draft;
     setDraft('');
-    await onSendMessage(nextDraft);
+    await onSendMessage(trimmed);
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await submit();
+  };
+
+  const handleKeyDown = async (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Enter alone sends; Shift+Enter inserts a newline
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      await submit();
+    }
   };
 
   return (
@@ -52,37 +65,39 @@ export const ChatPanel = ({
 
       <div ref={scrollContainerRef} className="min-h-0 flex-1 overflow-y-auto p-5">
         <div className="space-y-4">
-        {messages.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/50 p-5 text-sm text-slate-400">
-            Tap a suggestion or ask your own meeting question here.
-          </div>
-        ) : null}
+          {messages.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/50 p-5 text-sm text-slate-400">
+              Tap a suggestion for a detailed answer, or ask your own question here.
+            </div>
+          ) : null}
 
-        {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
-        ))}
+          {messages.map((message) => (
+            <ChatMessage key={message.id} message={message} />
+          ))}
 
-        {isWaitingForFirstToken ? (
-          <div className="flex justify-start">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 px-4 py-3">
-              <div className="flex gap-1">
-                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.2s]" />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.1s]" />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
+          {isWaitingForFirstToken ? (
+            <div className="flex justify-start">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 px-4 py-3">
+                <div className="flex gap-1">
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.2s]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.1s]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
+                </div>
               </div>
             </div>
-          </div>
-        ) : null}
+          ) : null}
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="mt-auto border-t border-slate-800/80 p-5">
         <div className="flex items-end gap-3">
           <textarea
+            ref={textareaRef}
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={handleKeyDown}
             rows={3}
-            placeholder="Ask about the meeting, decisions, risks, or next steps..."
+            placeholder="Ask about the meeting… (Enter to send, Shift+Enter for newline)"
             disabled={disabled || isStreaming}
             className="min-h-[88px] flex-1 resize-none rounded-2xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
           />

@@ -30,7 +30,7 @@ chatRouter.post('/', async (request, response, next) => {
     const messages = Array.isArray(body.messages) ? body.messages : [];
     const transcript = body.transcript?.trim() ?? '';
     const contextWindow = Number(body.contextWindow ?? 3000);
-    const latestUserMessage = [...messages].reverse().find((message) => message.role === 'user')?.content ?? '';
+    const latestUserMessage = [...messages].reverse().find((msg) => msg.role === 'user')?.content ?? '';
 
     if (!prompt || messages.length === 0) {
       response.status(400).json({ error: 'Prompt and messages are required' });
@@ -51,32 +51,17 @@ chatRouter.post('/', async (request, response, next) => {
       body: JSON.stringify({
         model: provider.chatModel,
         temperature: 0.2,
+        stream: true,
         messages: [
-          {
-            role: 'system',
-            content: systemPrompt,
-          },
-          ...messages.map((message) => ({
-            role: message.role,
-            content: message.content,
-          })),
+          { role: 'system', content: systemPrompt },
+          ...messages.map((msg) => ({ role: msg.role, content: msg.content })),
         ],
       }),
     });
 
-    if (!apiResponse.ok) {
+    if (!apiResponse.ok || !apiResponse.body) {
       const errorText = await apiResponse.text();
       response.status(apiResponse.status || 500).json({ error: errorText || 'Chat request failed' });
-      return;
-    }
-
-    const data = (await apiResponse.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    const content = data.choices?.[0]?.message?.content?.trim();
-
-    if (!content) {
-      response.status(502).json({ error: 'Chat response was empty' });
       return;
     }
 
@@ -85,24 +70,18 @@ chatRouter.post('/', async (request, response, next) => {
     response.setHeader('Connection', 'keep-alive');
     response.flushHeaders?.();
 
-    const tokens = content.split(/(\s+)/).filter((token) => token.length > 0);
+    const reader = apiResponse.body.getReader();
+    const decoder = new TextDecoder();
 
-    for (const token of tokens) {
-      response.write(
-        `data: ${JSON.stringify({
-          choices: [
-            {
-              delta: {
-                content: token,
-              },
-            },
-          ],
-        })}\n\n`,
-      );
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        response.write(decoder.decode(value, { stream: true }));
+      }
+    } finally {
+      response.end();
     }
-
-    response.write('data: [DONE]\n\n');
-    response.end();
   } catch (error) {
     next(error);
   }

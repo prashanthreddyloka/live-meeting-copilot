@@ -16,7 +16,7 @@ function App() {
   const canManualRefresh = session.isRecording && session.currentRecordingSeconds >= 10;
 
   const handleSuggestionSelect = async (suggestion: Suggestion) => {
-    await session.sendChatMessage(suggestion.full_prompt);
+    await session.sendChatMessage(suggestion.full_prompt, true);
   };
 
   return (

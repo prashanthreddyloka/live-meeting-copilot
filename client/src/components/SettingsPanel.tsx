@@ -41,39 +41,70 @@ export const SettingsPanel = ({
 
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-6">
           <label className="block space-y-2">
-            <span className="text-sm font-medium text-slate-200">API Key</span>
+            <span className="text-sm font-medium text-slate-200">Groq API Key</span>
             <input
               type="password"
               value={settings.groqApiKey}
               onChange={(event) => onUpdateSetting('groqApiKey', event.target.value)}
-              placeholder="Paste your API key"
+              placeholder="Paste your Groq API key"
               className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-400"
+            />
+            <p className="text-xs text-slate-500">Stored in localStorage. Never sent anywhere except Groq.</p>
+          </label>
+
+          <div className="border-t border-slate-800 pt-1" />
+
+          <label className="block space-y-2">
+            <span className="text-sm font-medium text-slate-200">Live suggestion prompt</span>
+            <p className="text-xs text-slate-500">
+              Used to generate 3 suggestion cards every ~30s. Variables:{' '}
+              <code className="rounded bg-slate-800 px-1 text-cyan-400">{'{RECENT_TRANSCRIPT}'}</code>{' '}
+              <code className="rounded bg-slate-800 px-1 text-cyan-400">{'{PREVIOUS_SUGGESTIONS}'}</code>{' '}
+              <code className="rounded bg-slate-800 px-1 text-cyan-400">{'{SUGGESTION_CONTEXT_WINDOW}'}</code>
+            </p>
+            <textarea
+              value={settings.suggestionPrompt}
+              onChange={(event) => onUpdateSetting('suggestionPrompt', event.target.value)}
+              rows={14}
+              className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm leading-6 text-slate-100 outline-none transition focus:border-cyan-400"
             />
           </label>
 
           <label className="block space-y-2">
-            <span className="text-sm font-medium text-slate-200">Suggestion prompt</span>
+            <span className="text-sm font-medium text-slate-200">Detailed answer prompt</span>
+            <p className="text-xs text-slate-500">
+              Used when a suggestion card is clicked. Variables:{' '}
+              <code className="rounded bg-slate-800 px-1 text-cyan-400">{'{FULL_TRANSCRIPT}'}</code>{' '}
+              <code className="rounded bg-slate-800 px-1 text-cyan-400">{'{USER_MESSAGE}'}</code>
+            </p>
             <textarea
-              value={settings.suggestionPrompt}
-              onChange={(event) => onUpdateSetting('suggestionPrompt', event.target.value)}
-              rows={15}
+              value={settings.detailedAnswerPrompt}
+              onChange={(event) => onUpdateSetting('detailedAnswerPrompt', event.target.value)}
+              rows={12}
               className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm leading-6 text-slate-100 outline-none transition focus:border-cyan-400"
             />
           </label>
 
           <label className="block space-y-2">
             <span className="text-sm font-medium text-slate-200">Chat prompt</span>
+            <p className="text-xs text-slate-500">
+              Used for freeform typed questions. Variables:{' '}
+              <code className="rounded bg-slate-800 px-1 text-cyan-400">{'{FULL_TRANSCRIPT}'}</code>{' '}
+              <code className="rounded bg-slate-800 px-1 text-cyan-400">{'{USER_MESSAGE}'}</code>
+            </p>
             <textarea
               value={settings.chatPrompt}
               onChange={(event) => onUpdateSetting('chatPrompt', event.target.value)}
-              rows={12}
+              rows={10}
               className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm leading-6 text-slate-100 outline-none transition focus:border-cyan-400"
             />
           </label>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="border-t border-slate-800 pt-1" />
+
+          <div className="grid gap-4 sm:grid-cols-2">
             <label className="block space-y-2">
-              <span className="text-sm font-medium text-slate-200">Suggestion words</span>
+              <span className="text-sm font-medium text-slate-200">Suggestion context (words)</span>
               <input
                 type="number"
                 min={100}
@@ -84,7 +115,18 @@ export const SettingsPanel = ({
             </label>
 
             <label className="block space-y-2">
-              <span className="text-sm font-medium text-slate-200">Chat words</span>
+              <span className="text-sm font-medium text-slate-200">Detailed answer context (words)</span>
+              <input
+                type="number"
+                min={500}
+                value={settings.detailedContextWindow}
+                onChange={(event) => onUpdateSetting('detailedContextWindow', Number(event.target.value))}
+                className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-cyan-400"
+              />
+            </label>
+
+            <label className="block space-y-2">
+              <span className="text-sm font-medium text-slate-200">Chat context (words)</span>
               <input
                 type="number"
                 min={500}
@@ -95,7 +137,7 @@ export const SettingsPanel = ({
             </label>
 
             <label className="block space-y-2">
-              <span className="text-sm font-medium text-slate-200">Chunk seconds</span>
+              <span className="text-sm font-medium text-slate-200">Chunk interval (seconds)</span>
               <input
                 type="number"
                 min={10}
