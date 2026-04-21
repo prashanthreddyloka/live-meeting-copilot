@@ -50,7 +50,8 @@ export const ChatPanel = ({
         <h2 className="mt-2 text-2xl font-semibold text-slate-50">Deep answer thread</h2>
       </div>
 
-      <div ref={scrollContainerRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
+      <div ref={scrollContainerRef} className="min-h-0 flex-1 overflow-y-auto p-5">
+        <div className="space-y-4">
         {messages.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/50 p-5 text-sm text-slate-400">
             Tap a suggestion or ask your own meeting question here.
@@ -72,9 +73,10 @@ export const ChatPanel = ({
             </div>
           </div>
         ) : null}
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="border-t border-slate-800/80 p-5">
+      <form onSubmit={handleSubmit} className="mt-auto border-t border-slate-800/80 p-5">
         <div className="flex items-end gap-3">
           <textarea
             value={draft}

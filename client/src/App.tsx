@@ -55,6 +55,8 @@ function App() {
             entries={session.transcriptEntries}
             isRecording={session.isRecording}
             isBusy={session.isTranscribing}
+            currentRecordingSeconds={session.currentRecordingSeconds}
+            chunkIntervalSeconds={settings.transcriptChunkInterval}
             micError={session.micError}
             disabled={!hasApiKey}
             onToggleRecording={session.toggleRecording}
