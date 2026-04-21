@@ -43,7 +43,7 @@ function App() {
 
         {!hasApiKey ? (
           <div className="mb-4 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-5 text-amber-100">
-            <p className="text-lg font-semibold">Enter your Groq API key in Settings to begin.</p>
+            <p className="text-lg font-semibold">Enter your API key in Settings to begin.</p>
             <p className="mt-2 text-sm text-amber-50/80">
               The key stays in localStorage on this device and is only forwarded at request time through the proxy.
             </p>

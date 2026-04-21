@@ -1,6 +1,5 @@
 import { Router } from 'express';
-
-const GROQ_CHAT_URL = 'https://api.groq.com/openai/v1/chat/completions';
+import { getProviderConfig, requireApiKey } from '../provider.js';
 
 interface ChatBody {
   messages?: Array<{ role: 'user' | 'assistant'; content: string }>;
@@ -8,14 +7,6 @@ interface ChatBody {
   contextWindow?: number;
   prompt?: string;
 }
-
-const requireGroqApiKey = (value: string | undefined): string => {
-  if (!value?.trim()) {
-    throw new Error('Missing Groq API key');
-  }
-
-  return value.trim();
-};
 
 const clipWords = (text: string, wordLimit: number): string => {
   const words = text.trim().split(/\s+/).filter(Boolean);
@@ -32,7 +23,8 @@ export const chatRouter = Router();
 
 chatRouter.post('/', async (request, response, next) => {
   try {
-    const apiKey = requireGroqApiKey(request.header('x-groq-api-key'));
+    const apiKey = requireApiKey(request.header('x-groq-api-key'));
+    const provider = getProviderConfig(apiKey);
     const body = request.body as ChatBody;
     const prompt = body.prompt?.trim();
     const messages = Array.isArray(body.messages) ? body.messages : [];
@@ -50,14 +42,14 @@ chatRouter.post('/', async (request, response, next) => {
       USER_MESSAGE: latestUserMessage,
     });
 
-    const groqResponse = await fetch(GROQ_CHAT_URL, {
+    const apiResponse = await fetch(provider.chatUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'openai/gpt-oss-120b',
+        model: provider.chatModel,
         temperature: 0.2,
         messages: [
           {
@@ -72,19 +64,19 @@ chatRouter.post('/', async (request, response, next) => {
       }),
     });
 
-    if (!groqResponse.ok) {
-      const errorText = await groqResponse.text();
-      response.status(groqResponse.status || 500).json({ error: errorText || 'Groq chat request failed' });
+    if (!apiResponse.ok) {
+      const errorText = await apiResponse.text();
+      response.status(apiResponse.status || 500).json({ error: errorText || 'Chat request failed' });
       return;
     }
 
-    const data = (await groqResponse.json()) as {
+    const data = (await apiResponse.json()) as {
       choices?: Array<{ message?: { content?: string } }>;
     };
     const content = data.choices?.[0]?.message?.content?.trim();
 
     if (!content) {
-      response.status(502).json({ error: 'Groq chat response was empty' });
+      response.status(502).json({ error: 'Chat response was empty' });
       return;
     }
 

@@ -1,6 +1,6 @@
 import { Router } from 'express';
+import { getProviderConfig, requireApiKey } from '../provider.js';
 
-const GROQ_CHAT_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const SUGGESTION_TYPES = new Set(['ASK', 'FACT_CHECK', 'TALKING_POINT', 'ANSWER', 'CLARIFY']);
 
 interface SuggestionBody {
@@ -16,14 +16,6 @@ interface Suggestion {
   preview: string;
   full_prompt: string;
 }
-
-const requireGroqApiKey = (value: string | undefined): string => {
-  if (!value?.trim()) {
-    throw new Error('Missing Groq API key');
-  }
-
-  return value.trim();
-};
 
 const clipWords = (text: string, wordLimit: number): string => {
   const words = text.trim().split(/\s+/).filter(Boolean);
@@ -73,7 +65,8 @@ export const suggestionsRouter = Router();
 
 suggestionsRouter.post('/', async (request, response, next) => {
   try {
-    const apiKey = requireGroqApiKey(request.header('x-groq-api-key'));
+    const apiKey = requireApiKey(request.header('x-groq-api-key'));
+    const provider = getProviderConfig(apiKey);
     const body = request.body as SuggestionBody;
     const transcript = body.transcript?.trim();
     const prompt = body.prompt?.trim();
@@ -91,14 +84,14 @@ suggestionsRouter.post('/', async (request, response, next) => {
       PREVIOUS_SUGGESTIONS: previousSuggestions.length > 0 ? previousSuggestions.join('\n') : 'None',
     });
 
-    const groqResponse = await fetch(GROQ_CHAT_URL, {
+    const apiResponse = await fetch(provider.chatUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'openai/gpt-oss-120b',
+        model: provider.chatModel,
         temperature: 0.3,
         messages: [
           {
@@ -109,13 +102,13 @@ suggestionsRouter.post('/', async (request, response, next) => {
       }),
     });
 
-    if (!groqResponse.ok) {
-      const errorText = await groqResponse.text();
-      response.status(groqResponse.status).json({ error: errorText || 'Groq suggestions request failed' });
+    if (!apiResponse.ok) {
+      const errorText = await apiResponse.text();
+      response.status(apiResponse.status).json({ error: errorText || 'Suggestions request failed' });
       return;
     }
 
-    const data = (await groqResponse.json()) as {
+    const data = (await apiResponse.json()) as {
       choices?: Array<{ message?: { content?: string } }>;
     };
     const content = data.choices?.[0]?.message?.content ?? '';

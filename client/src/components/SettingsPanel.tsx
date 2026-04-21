@@ -41,12 +41,12 @@ export const SettingsPanel = ({
 
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-6">
           <label className="block space-y-2">
-            <span className="text-sm font-medium text-slate-200">Groq API Key</span>
+            <span className="text-sm font-medium text-slate-200">API Key</span>
             <input
               type="password"
               value={settings.groqApiKey}
               onChange={(event) => onUpdateSetting('groqApiKey', event.target.value)}
-              placeholder="gsk_..."
+              placeholder="Paste your API key"
               className="w-full rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-cyan-400"
             />
           </label>

@@ -1,22 +1,15 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { getProviderConfig, requireApiKey } from '../provider.js';
 
-const GROQ_TRANSCRIBE_URL = 'https://api.groq.com/openai/v1/audio/transcriptions';
 const upload = multer({ storage: multer.memoryStorage() });
-
-const requireGroqApiKey = (value: string | undefined): string => {
-  if (!value?.trim()) {
-    throw new Error('Missing Groq API key');
-  }
-
-  return value.trim();
-};
 
 export const transcribeRouter = Router();
 
 transcribeRouter.post('/', upload.single('audio'), async (request, response, next) => {
   try {
-    const apiKey = requireGroqApiKey(request.header('x-groq-api-key'));
+    const apiKey = requireApiKey(request.header('x-groq-api-key'));
+    const provider = getProviderConfig(apiKey);
     const audioFile = request.file;
 
     if (!audioFile) {
@@ -31,12 +24,16 @@ transcribeRouter.post('/', upload.single('audio'), async (request, response, nex
         type: audioFile.mimetype || 'audio/webm',
       }),
     );
-    formData.append('model', 'whisper-large-v3');
-    formData.append('response_format', 'json');
-    formData.append('temperature', '0');
+    if (provider.transcriptionModel) {
+      formData.append('model', provider.transcriptionModel);
+      formData.append('response_format', 'json');
+      formData.append('temperature', '0');
+    } else {
+      formData.append('format', 'true');
+    }
     formData.append('language', 'en');
 
-    const groqResponse = await fetch(GROQ_TRANSCRIBE_URL, {
+    const apiResponse = await fetch(provider.transcriptionUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -44,13 +41,13 @@ transcribeRouter.post('/', upload.single('audio'), async (request, response, nex
       body: formData,
     });
 
-    if (!groqResponse.ok) {
-      const errorText = await groqResponse.text();
-      response.status(groqResponse.status).json({ error: errorText || 'Groq transcription request failed' });
+    if (!apiResponse.ok) {
+      const errorText = await apiResponse.text();
+      response.status(apiResponse.status).json({ error: errorText || 'Transcription request failed' });
       return;
     }
 
-    const data = (await groqResponse.json()) as { text?: string };
+    const data = (await apiResponse.json()) as { text?: string };
     response.json({ text: data.text ?? '' });
   } catch (error) {
     next(error);

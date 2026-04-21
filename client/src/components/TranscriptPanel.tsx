@@ -62,7 +62,7 @@ export const TranscriptPanel = ({
         {isBusy ? <p className="mt-3 text-sm text-slate-400">Processing the latest audio chunk...</p> : null}
         {micError ? <p className="mt-3 text-sm text-rose-300">{micError}</p> : null}
       {disabled ? (
-        <p className="mt-3 text-sm text-amber-300">Enter your Groq API key in Settings to begin.</p>
+        <p className="mt-3 text-sm text-amber-300">Enter your API key in Settings to begin.</p>
       ) : null}
       </div>
 
