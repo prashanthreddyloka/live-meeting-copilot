@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Settings2 } from 'lucide-react';
+import { Settings2, Download } from 'lucide-react';
 import { ChatPanel } from './components/ChatPanel';
-import { ExportButton } from './components/ExportButton';
 import { SettingsPanel } from './components/SettingsPanel';
 import { SuggestionsPanel } from './components/SuggestionsPanel';
 import { TranscriptPanel } from './components/TranscriptPanel';
@@ -20,38 +19,61 @@ function App() {
   };
 
   return (
-    // h-screen + overflow-hidden locks the viewport so each panel scrolls independently
-    <div className="flex h-screen flex-col overflow-hidden bg-transparent px-4 py-4 text-slate-100 sm:px-6 lg:px-8">
-      <div className="mx-auto flex h-full w-full max-w-[1800px] flex-col">
-        <header className="mb-4 flex shrink-0 items-center justify-between rounded-3xl border border-slate-800/80 bg-slate-900/60 px-5 py-4 shadow-glow backdrop-blur">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-300">TwinMind</p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">Live Suggestions</h1>
-            <p className="mt-1 text-sm text-slate-400">
-              Real-time meeting transcription, suggestion cards, and transcript-grounded chat.
-            </p>
+    <div className="flex h-screen flex-col overflow-hidden bg-transparent px-3 py-3 text-slate-100 sm:px-4 lg:px-5">
+      <div className="mx-auto flex h-full w-full max-w-[1920px] flex-col gap-3">
+        {/* Header */}
+        <header className="shrink-0 flex items-center justify-between rounded-xl border border-slate-800/60 bg-slate-950/90 px-4 py-3 backdrop-blur">
+          <div className="flex items-center gap-3">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-400/15 ring-1 ring-cyan-400/30">
+              <span className="text-[11px] font-bold text-cyan-300">TM</span>
+            </div>
+            <div>
+              <h1 className="text-sm font-semibold text-slate-100">TwinMind Copilot</h1>
+              <p className="text-[10px] text-slate-500">Live meeting transcription &amp; AI suggestions</p>
+            </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setIsSettingsOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full border border-slate-700 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-slate-500 hover:text-white"
-          >
-            <Settings2 className="h-4 w-4" />
-            Settings
-          </button>
+          <div className="flex items-center gap-2">
+            {!hasApiKey && (
+              <span className="hidden rounded-full border border-amber-400/20 bg-amber-400/8 px-3 py-1 text-[11px] font-medium text-amber-300 sm:inline-block">
+                API key required
+              </span>
+            )}
+            {session.hasTranscript && (
+              <button
+                type="button"
+                onClick={session.exportSession}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/80 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-slate-500 hover:text-white"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Export
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setIsSettingsOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/80 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-slate-500 hover:text-white"
+            >
+              <Settings2 className="h-3.5 w-3.5" />
+              Settings
+            </button>
+          </div>
         </header>
 
+        {/* API key banner */}
         {!hasApiKey ? (
-          <div className="mb-4 shrink-0 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-5 text-amber-100">
-            <p className="text-lg font-semibold">Enter your API key in Settings to begin.</p>
-            <p className="mt-2 text-sm text-amber-50/80">
-              The key stays in localStorage on this device and is only forwarded at request time through the proxy.
+          <div className="shrink-0 rounded-xl border border-amber-400/15 bg-amber-400/8 px-4 py-3">
+            <p className="text-sm font-medium text-amber-200">
+              Enter your Groq API key in Settings to begin.{' '}
+              <span className="text-xs font-normal text-amber-300/70">
+                Key is stored in localStorage and only forwarded to Groq at request time.
+              </span>
             </p>
           </div>
         ) : null}
 
-        <main className="grid min-h-0 flex-1 gap-4 overflow-hidden xl:grid-cols-[1.05fr,1fr,1fr]">
+        {/* Three-column layout */}
+        <main className="grid min-h-0 flex-1 gap-3 overflow-hidden xl:grid-cols-[1fr,1fr,1fr]">
           <TranscriptPanel
             entries={session.transcriptEntries}
             interimText={session.interimText}
@@ -70,6 +92,8 @@ function App() {
             disabled={!hasApiKey}
             canManualRefresh={canManualRefresh}
             error={session.suggestionsError}
+            chunkIntervalSeconds={settings.transcriptChunkInterval}
+            currentRecordingSeconds={session.currentRecordingSeconds}
             onManualRefresh={session.manualRefresh}
             onRetry={() => void session.retrySuggestions()}
             onSelectSuggestion={(suggestion) => void handleSuggestionSelect(suggestion)}
@@ -93,16 +117,17 @@ function App() {
         onUpdateSetting={updateSetting}
       />
 
-      <ExportButton disabled={!session.hasTranscript} onExport={session.exportSession} />
-
-      <div className="fixed bottom-6 left-6 z-30 space-y-3">
+      {/* Toast notifications */}
+      <div className="fixed bottom-5 left-5 z-30 space-y-2">
         {session.toasts.map((toast) => (
           <div
             key={toast.id}
-            className="max-w-sm rounded-2xl border border-slate-700 bg-slate-900/95 px-4 py-3 text-sm shadow-glow backdrop-blur"
+            className="flex max-w-xs gap-3 rounded-xl border border-slate-700/80 bg-slate-900/95 px-4 py-3 text-sm shadow-xl backdrop-blur"
           >
-            <p className="font-semibold text-slate-100">{toast.title}</p>
-            <p className="mt-1 text-slate-300">{toast.description}</p>
+            <div>
+              <p className="font-semibold text-slate-100">{toast.title}</p>
+              <p className="mt-0.5 text-slate-400">{toast.description}</p>
+            </div>
           </div>
         ))}
       </div>
