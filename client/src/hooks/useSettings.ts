@@ -9,6 +9,12 @@ import {
 import type { SettingsState } from '../types';
 
 const STORAGE_KEY = 'twinmind-live-settings';
+const LEGACY_CHAT_PROMPT = `SYSTEM:
+You are an expert AI meeting assistant with access to the full transcript of an ongoing conversation. Answer the user's question thoroughly and specifically, referencing what was actually said in the transcript where relevant. Be direct, structured, and actionable. Use bullet points or numbered lists when helpful.
+Full transcript so far:
+{FULL_TRANSCRIPT}
+USER:
+{USER_MESSAGE}`;
 
 const DEFAULT_SETTINGS: SettingsState = {
   groqApiKey: '',
@@ -32,11 +38,14 @@ const parseStoredSettings = (): SettingsState => {
 
   try {
     const parsed = JSON.parse(raw) as Partial<SettingsState>;
+    const storedChatPrompt = parsed.chatPrompt ?? DEFAULT_SETTINGS.chatPrompt;
+    const migratedChatPrompt =
+      storedChatPrompt === LEGACY_CHAT_PROMPT ? DEFAULT_SETTINGS.chatPrompt : storedChatPrompt;
 
     return {
       groqApiKey: parsed.groqApiKey ?? DEFAULT_SETTINGS.groqApiKey,
       suggestionPrompt: parsed.suggestionPrompt ?? DEFAULT_SETTINGS.suggestionPrompt,
-      chatPrompt: parsed.chatPrompt ?? DEFAULT_SETTINGS.chatPrompt,
+      chatPrompt: migratedChatPrompt,
       suggestionContextWindow: parsed.suggestionContextWindow ?? DEFAULT_SETTINGS.suggestionContextWindow,
       chatContextWindow: parsed.chatContextWindow ?? DEFAULT_SETTINGS.chatContextWindow,
       transcriptChunkInterval: parsed.transcriptChunkInterval ?? DEFAULT_SETTINGS.transcriptChunkInterval,
