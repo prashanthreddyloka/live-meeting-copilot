@@ -59,7 +59,6 @@ chatRouter.post('/', async (request, response, next) => {
       body: JSON.stringify({
         model: 'openai/gpt-oss-120b',
         temperature: 0.2,
-        stream: true,
         messages: [
           {
             role: 'system',
@@ -73,28 +72,44 @@ chatRouter.post('/', async (request, response, next) => {
       }),
     });
 
-    if (!groqResponse.ok || !groqResponse.body) {
+    if (!groqResponse.ok) {
       const errorText = await groqResponse.text();
       response.status(groqResponse.status || 500).json({ error: errorText || 'Groq chat request failed' });
+      return;
+    }
+
+    const data = (await groqResponse.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    const content = data.choices?.[0]?.message?.content?.trim();
+
+    if (!content) {
+      response.status(502).json({ error: 'Groq chat response was empty' });
       return;
     }
 
     response.setHeader('Content-Type', 'text/event-stream');
     response.setHeader('Cache-Control', 'no-cache, no-transform');
     response.setHeader('Connection', 'keep-alive');
+    response.flushHeaders?.();
 
-    const reader = groqResponse.body.getReader();
+    const tokens = content.split(/(\s+)/).filter((token) => token.length > 0);
 
-    while (true) {
-      const { done, value } = await reader.read();
-
-      if (done) {
-        break;
-      }
-
-      response.write(Buffer.from(value));
+    for (const token of tokens) {
+      response.write(
+        `data: ${JSON.stringify({
+          choices: [
+            {
+              delta: {
+                content: token,
+              },
+            },
+          ],
+        })}\n\n`,
+      );
     }
 
+    response.write('data: [DONE]\n\n');
     response.end();
   } catch (error) {
     next(error);
