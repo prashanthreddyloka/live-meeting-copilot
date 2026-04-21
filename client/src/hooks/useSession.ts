@@ -48,6 +48,8 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
   const chatHistoryRef = useRef(chatHistory);
   const lastManualRefreshRef = useRef(0);
   const lastSuggestionContextRef = useRef<{ seconds: number; timestamp: string; transcript: string } | null>(null);
+  // Ref so handleAudioChunk can call clearInterim without a circular hook dependency
+  const clearInterimRef = useRef<() => void>(() => {});
 
   transcriptRef.current = transcriptEntries;
   suggestionBatchesRef.current = suggestionBatches;
@@ -129,6 +131,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
 
       try {
         const { text } = await transcribeAudio(audio, settings.groqApiKey);
+        clearInterimRef.current();
         const normalizedText = text.trim() || 'No speech detected in this segment.';
         const entry: TranscriptEntry = {
           id: createId(),
@@ -158,14 +161,18 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
     [addToast, generateSuggestionsForTranscript, hasApiKey, settings.groqApiKey],
   );
 
-  const { isRecording, elapsedSeconds, requestChunk, startRecording, stopRecording } = useMicRecorder({
-    chunkIntervalSeconds: settings.transcriptChunkInterval,
-    onChunk: handleAudioChunk,
-    onPermissionError: (message) => {
-      setMicError(message);
-      addToast('Microphone unavailable', message);
-    },
-  });
+  const { isRecording, elapsedSeconds, interimText, clearInterim, requestChunk, startRecording, stopRecording } =
+    useMicRecorder({
+      chunkIntervalSeconds: settings.transcriptChunkInterval,
+      onChunk: handleAudioChunk,
+      onPermissionError: (message) => {
+        setMicError(message);
+        addToast('Microphone unavailable', message);
+      },
+    });
+
+  // Keep ref in sync so handleAudioChunk can call clearInterim without a stale closure
+  clearInterimRef.current = clearInterim;
 
   const toggleRecording = useCallback(async () => {
     setMicError(null);
@@ -329,6 +336,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
       suggestionsError,
       isRecording,
       currentRecordingSeconds: elapsedSeconds,
+      interimText,
       isTranscribing,
       isRefreshingSuggestions,
       isStreamingChat,
@@ -344,6 +352,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
       chatHistory,
       exportSession,
       elapsedSeconds,
+      interimText,
       isRecording,
       isRefreshingSuggestions,
       isStreamingChat,

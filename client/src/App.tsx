@@ -20,9 +20,10 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-transparent px-4 py-4 text-slate-100 sm:px-6 lg:px-8">
-      <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-[1800px] flex-col">
-        <header className="mb-4 flex items-center justify-between rounded-3xl border border-slate-800/80 bg-slate-900/60 px-5 py-4 shadow-glow backdrop-blur">
+    // h-screen + overflow-hidden locks the viewport so each panel scrolls independently
+    <div className="flex h-screen flex-col overflow-hidden bg-transparent px-4 py-4 text-slate-100 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-full w-full max-w-[1800px] flex-col">
+        <header className="mb-4 flex shrink-0 items-center justify-between rounded-3xl border border-slate-800/80 bg-slate-900/60 px-5 py-4 shadow-glow backdrop-blur">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.35em] text-cyan-300">TwinMind</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white">Live Suggestions</h1>
@@ -42,7 +43,7 @@ function App() {
         </header>
 
         {!hasApiKey ? (
-          <div className="mb-4 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-5 text-amber-100">
+          <div className="mb-4 shrink-0 rounded-3xl border border-amber-400/20 bg-amber-400/10 p-5 text-amber-100">
             <p className="text-lg font-semibold">Enter your API key in Settings to begin.</p>
             <p className="mt-2 text-sm text-amber-50/80">
               The key stays in localStorage on this device and is only forwarded at request time through the proxy.
@@ -50,9 +51,10 @@ function App() {
           </div>
         ) : null}
 
-        <main className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[1.05fr,1fr,1fr]">
+        <main className="grid min-h-0 flex-1 gap-4 overflow-hidden xl:grid-cols-[1.05fr,1fr,1fr]">
           <TranscriptPanel
             entries={session.transcriptEntries}
+            interimText={session.interimText}
             isRecording={session.isRecording}
             isBusy={session.isTranscribing}
             currentRecordingSeconds={session.currentRecordingSeconds}
