@@ -5,6 +5,7 @@ export type SuggestionType = (typeof SUGGESTION_TYPES)[number];
 export interface TranscriptEntry {
   id: string;
   timestamp: string;
+  createdAt: string;
   seconds: number;
   text: string;
   status: 'success' | 'error';
@@ -20,6 +21,7 @@ export interface Suggestion {
 export interface SuggestionBatch {
   id: string;
   timestamp: string;
+  createdAt: string;
   seconds: number;
   suggestions: Suggestion[];
 }
@@ -50,8 +52,9 @@ export interface SettingsState {
 
 export interface ExportPayload {
   exported_at: string;
-  transcript: Array<{ timestamp: string; text: string }>;
+  transcript: Array<{ elapsed: string; timestamp: string; text: string }>;
   suggestion_batches: Array<{
+    elapsed: string;
     timestamp: string;
     suggestions: Suggestion[];
   }>;

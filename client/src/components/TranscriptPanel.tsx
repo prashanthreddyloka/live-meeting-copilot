@@ -161,7 +161,12 @@ export const TranscriptPanel = ({
             key={entry.id}
             className="group flex gap-3 border-t border-slate-800/50 px-5 py-3.5 transition-colors hover:bg-slate-900/40"
           >
-            <time className="mt-0.5 shrink-0 font-mono text-[11px] text-slate-600">{entry.timestamp}</time>
+            <div className="mt-0.5 w-16 shrink-0 text-right">
+              <time className="block font-mono text-[11px] text-slate-400">
+                {new Date(entry.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </time>
+              <span className="block font-mono text-[10px] text-slate-600">{entry.timestamp}</span>
+            </div>
             <p
               className={`text-[0.9rem] leading-relaxed ${
                 entry.status === 'error' ? 'text-rose-300/80' : 'text-slate-300'

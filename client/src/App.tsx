@@ -39,16 +39,6 @@ function App() {
                 API key required
               </span>
             )}
-            {session.hasTranscript && (
-              <button
-                type="button"
-                onClick={session.exportSession}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/80 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-slate-500 hover:text-white"
-              >
-                <Download className="h-3.5 w-3.5" />
-                Export
-              </button>
-            )}
             <button
               type="button"
               onClick={() => setIsSettingsOpen(true)}
@@ -117,8 +107,20 @@ function App() {
         onUpdateSetting={updateSetting}
       />
 
+      {/* Floating export button — always visible once session has data */}
+      <button
+        type="button"
+        onClick={session.exportSession}
+        disabled={!session.hasTranscript}
+        className="fixed bottom-6 right-6 z-30 inline-flex items-center gap-2 rounded-full bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-cyan-950/30 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
+        title="Export transcript, suggestions &amp; chat as JSON"
+      >
+        <Download className="h-4 w-4" />
+        Export session
+      </button>
+
       {/* Toast notifications */}
-      <div className="fixed bottom-5 left-5 z-30 space-y-2">
+      <div className="fixed bottom-6 left-6 z-30 space-y-2">
         {session.toasts.map((toast) => (
           <div
             key={toast.id}

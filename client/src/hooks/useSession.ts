@@ -48,7 +48,6 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
   const chatHistoryRef = useRef(chatHistory);
   const lastManualRefreshRef = useRef(0);
   const lastSuggestionContextRef = useRef<{ seconds: number; timestamp: string; transcript: string } | null>(null);
-  // Ref so handleAudioChunk can call clearInterim without a circular hook dependency
   const clearInterimRef = useRef<() => void>(() => {});
 
   transcriptRef.current = transcriptEntries;
@@ -68,6 +67,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
       {
         id: createId(),
         timestamp,
+        createdAt: new Date().toISOString(),
         seconds,
         suggestions,
       },
@@ -136,6 +136,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
         const entry: TranscriptEntry = {
           id: createId(),
           timestamp,
+          createdAt: new Date().toISOString(),
           seconds: elapsedSeconds,
           text: normalizedText,
           status: 'success',
@@ -148,6 +149,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
         const failedEntry: TranscriptEntry = {
           id: createId(),
           timestamp,
+          createdAt: new Date().toISOString(),
           seconds: elapsedSeconds,
           text: 'Transcription failed for this segment',
           status: 'error',
@@ -171,7 +173,6 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
       },
     });
 
-  // Keep ref in sync so handleAudioChunk can call clearInterim without a stale closure
   clearInterimRef.current = clearInterim;
 
   const toggleRecording = useCallback(async () => {
@@ -300,11 +301,13 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
     const payload: ExportPayload = {
       exported_at: new Date().toISOString(),
       transcript: transcriptRef.current.map((entry) => ({
-        timestamp: entry.timestamp,
+        elapsed: entry.timestamp,
+        timestamp: entry.createdAt,
         text: entry.text,
       })),
       suggestion_batches: suggestionBatchesRef.current.map((batch) => ({
-        timestamp: batch.timestamp,
+        elapsed: batch.timestamp,
+        timestamp: batch.createdAt,
         suggestions: batch.suggestions,
       })),
       chat_history: chatHistoryRef.current.map((message) => ({
