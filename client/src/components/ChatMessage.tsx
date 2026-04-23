@@ -36,10 +36,10 @@ const renderMarkdown = (text: string): React.ReactNode[] => {
       const content = headerMatch[2];
       const className =
         level === 1
-          ? 'mt-3 mb-1 text-sm font-bold text-slate-100'
+          ? 'mt-3 mb-1 text-sm font-bold text-cyan-300 tracking-tight'
           : level === 2
-            ? 'mt-2 mb-0.5 text-sm font-semibold text-slate-100'
-            : 'mt-2 mb-0.5 text-xs font-semibold text-slate-200';
+            ? 'mt-2 mb-1 text-[0.8rem] font-semibold text-sky-400 uppercase tracking-wide'
+            : 'mt-2 mb-0.5 text-xs font-semibold text-slate-300';
       blocks.push(<p key={i} className={className}>{renderInline(content)}</p>);
       i++;
       continue;
@@ -58,7 +58,7 @@ const renderMarkdown = (text: string): React.ReactNode[] => {
         i++;
       }
       blocks.push(
-        <ul key={i} className="ml-3.5 list-disc space-y-1 marker:text-slate-600">
+        <ul key={i} className="ml-3.5 list-disc space-y-1 marker:text-cyan-500/70">
           {items.map((item, j) => <li key={j}>{renderInline(item)}</li>)}
         </ul>,
       );

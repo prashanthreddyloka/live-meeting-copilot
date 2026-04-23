@@ -134,13 +134,17 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
       try {
         const { text } = await transcribeAudio(audio, settings.groqApiKey);
         clearInterimRef.current();
-        const normalizedText = text.trim() || 'No speech detected in this segment.';
+        const trimmedText = text.trim();
+        if (!trimmedText) {
+          // Silent segment — no speech detected, skip without adding an entry
+          return;
+        }
         const entry: TranscriptEntry = {
           id: createId(),
           timestamp,
           createdAt: new Date().toISOString(),
           seconds: elapsedSeconds,
-          text: normalizedText,
+          text: trimmedText,
           status: 'success',
         };
         const nextEntries = [...transcriptRef.current, entry];
@@ -151,17 +155,9 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
           : confirmedTranscript;
         await generateSuggestionsForTranscript(fullContext, timestamp, elapsedSeconds);
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Transcription failed for this segment';
-        const failedEntry: TranscriptEntry = {
-          id: createId(),
-          timestamp,
-          createdAt: new Date().toISOString(),
-          seconds: elapsedSeconds,
-          text: 'Transcription failed for this segment',
-          status: 'error',
-        };
-        setTranscriptEntries((current) => [...current, failedEntry]);
-        addToast('Transcription failed', message);
+        // Transcription errors are typically silence or tiny blobs — swallow silently
+        console.warn('[transcription] skipped segment:', error instanceof Error ? error.message : error);
+        clearInterimRef.current();
       } finally {
         setIsTranscribing(false);
       }
