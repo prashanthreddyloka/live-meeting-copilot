@@ -91,8 +91,9 @@ suggestionsRouter.post('/', async (request, response, next) => {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: provider.chatModel,
+        model: provider.suggestionModel,
         temperature: 0.3,
+        max_tokens: 600,
         messages: [
           {
             role: 'user',

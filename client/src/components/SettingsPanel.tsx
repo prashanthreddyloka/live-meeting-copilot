@@ -57,7 +57,7 @@ export const SettingsPanel = ({
           <label className="block space-y-2">
             <span className="text-sm font-medium text-slate-200">Live suggestion prompt</span>
             <p className="text-xs text-slate-500">
-              Used to generate 3 suggestion cards every ~30s. Variables:{' '}
+              Used to generate 3 suggestion cards every ~20s (auto-timer) or on Whisper chunk. Variables:{' '}
               <code className="rounded bg-slate-800 px-1 text-cyan-400">{'{RECENT_TRANSCRIPT}'}</code>{' '}
               <code className="rounded bg-slate-800 px-1 text-cyan-400">{'{PREVIOUS_SUGGESTIONS}'}</code>{' '}
               <code className="rounded bg-slate-800 px-1 text-cyan-400">{'{SUGGESTION_CONTEXT_WINDOW}'}</code>

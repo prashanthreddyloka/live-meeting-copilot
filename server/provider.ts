@@ -5,6 +5,7 @@ interface ProviderConfig {
   chatUrl: string;
   transcriptionUrl: string;
   chatModel: string;
+  suggestionModel: string;
   transcriptionModel?: string;
 }
 
@@ -14,6 +15,7 @@ const PROVIDER_CONFIG: Record<ApiProvider, ProviderConfig> = {
     chatUrl: 'https://api.groq.com/openai/v1/chat/completions',
     transcriptionUrl: 'https://api.groq.com/openai/v1/audio/transcriptions',
     chatModel: 'openai/gpt-oss-120b',
+    suggestionModel: 'openai/gpt-oss-120b',
     transcriptionModel: 'whisper-large-v3',
   },
   xai: {
@@ -21,6 +23,7 @@ const PROVIDER_CONFIG: Record<ApiProvider, ProviderConfig> = {
     chatUrl: 'https://api.x.ai/v1/chat/completions',
     transcriptionUrl: 'https://api.x.ai/v1/stt',
     chatModel: 'grok-4.20-beta-latest-non-reasoning',
+    suggestionModel: 'grok-4.20-beta-latest-non-reasoning',
   },
 };
 

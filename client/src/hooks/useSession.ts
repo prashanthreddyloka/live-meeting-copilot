@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fetchSuggestions } from '../services/suggestionsService';
 import { transcribeAudio } from '../services/transcriptionService';
 import { streamChatCompletion } from '../services/chatService';
@@ -178,6 +178,24 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
   clearInterimRef.current = clearInterim;
   interimTextRef.current = interimText;
 
+  // Generate suggestions every 20s from interimText (independent of Whisper chunks)
+  useEffect(() => {
+    if (!isRecording || !hasApiKey) return;
+    const INTERVAL_MS = 20_000;
+
+    const timer = window.setInterval(() => {
+      const elapsed = elapsedSecondsRef.current;
+      if (elapsed < MIN_TRANSCRIPTION_SECONDS) return;
+      const confirmed = flattenTranscript(transcriptRef.current);
+      const live = interimTextRef.current;
+      if (!confirmed && !live) return;
+      const fullContext = live ? `${confirmed}\n[Live] ${live}` : confirmed;
+      void generateSuggestionsForTranscript(fullContext, formatElapsed(elapsed), elapsed);
+    }, INTERVAL_MS);
+
+    return () => window.clearInterval(timer);
+  }, [isRecording, hasApiKey, generateSuggestionsForTranscript]);
+
   const toggleRecording = useCallback(async () => {
     setMicError(null);
 
@@ -189,12 +207,14 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
     await startRecording();
   }, [isRecording, startRecording, stopRecording]);
 
-  const manualRefresh = useCallback(() => {
-    if (!isRecording) {
-      return;
-    }
+  const elapsedSecondsRef = useRef(0);
+  elapsedSecondsRef.current = elapsedSeconds;
 
-    if (elapsedSeconds < MIN_TRANSCRIPTION_SECONDS) {
+  const manualRefresh = useCallback(() => {
+    if (!isRecording) return;
+
+    const elapsed = elapsedSecondsRef.current;
+    if (elapsed < MIN_TRANSCRIPTION_SECONDS) {
       addToast(
         'Recording too short',
         `Wait until at least ${MIN_TRANSCRIPTION_SECONDS} seconds of audio have been captured before refreshing.`,
@@ -203,14 +223,19 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
     }
 
     const now = Date.now();
-
-    if (now - lastManualRefreshRef.current < 1000) {
-      return;
-    }
-
+    if (now - lastManualRefreshRef.current < 1000) return;
     lastManualRefreshRef.current = now;
+
+    // Fast path: generate suggestions immediately from current context without waiting for Whisper
+    const confirmed = flattenTranscript(transcriptRef.current);
+    const live = interimTextRef.current;
+    const fullContext = live ? `${confirmed}\n[Live] ${live}` : confirmed;
+    const timestamp = formatElapsed(elapsed);
+    void generateSuggestionsForTranscript(fullContext, timestamp, elapsed);
+
+    // Also request a Whisper chunk asynchronously to refresh confirmed transcript
     requestChunk();
-  }, [addToast, elapsedSeconds, isRecording, requestChunk]);
+  }, [addToast, generateSuggestionsForTranscript, isRecording, requestChunk]);
 
   const retrySuggestions = useCallback(async () => {
     const context = lastSuggestionContextRef.current;
