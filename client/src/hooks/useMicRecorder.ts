@@ -80,10 +80,12 @@ export const useMicRecorder = ({
     recognitionRef.current = recognition;
   }, []);
 
-  // Call this after a Whisper chunk is confirmed to clear the live display
+  // Restart recognition to clear accumulated results from SpeechRecognition
   const clearInterim = useCallback(() => {
     setInterimText('');
-  }, []);
+    stopRecognition();
+    startSpeechRecognition();
+  }, [stopRecognition, startSpeechRecognition]);
 
   const startRecording = useCallback(async () => {
     try {

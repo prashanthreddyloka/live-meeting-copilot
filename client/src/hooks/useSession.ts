@@ -49,6 +49,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
   const lastManualRefreshRef = useRef(0);
   const lastSuggestionContextRef = useRef<{ seconds: number; timestamp: string; transcript: string } | null>(null);
   const clearInterimRef = useRef<() => void>(() => {});
+  const interimTextRef = useRef('');
 
   transcriptRef.current = transcriptEntries;
   suggestionBatchesRef.current = suggestionBatches;
@@ -127,6 +128,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
       }
 
       const timestamp = formatElapsed(elapsedSeconds);
+      const liveContext = interimTextRef.current;
       setIsTranscribing(true);
 
       try {
@@ -143,7 +145,11 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
         };
         const nextEntries = [...transcriptRef.current, entry];
         setTranscriptEntries(nextEntries);
-        await generateSuggestionsForTranscript(flattenTranscript(nextEntries), timestamp, elapsedSeconds);
+        const confirmedTranscript = flattenTranscript(nextEntries);
+        const fullContext = liveContext
+          ? `${confirmedTranscript}\n[Live] ${liveContext}`
+          : confirmedTranscript;
+        await generateSuggestionsForTranscript(fullContext, timestamp, elapsedSeconds);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Transcription failed for this segment';
         const failedEntry: TranscriptEntry = {
@@ -174,6 +180,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
     });
 
   clearInterimRef.current = clearInterim;
+  interimTextRef.current = interimText;
 
   const toggleRecording = useCallback(async () => {
     setMicError(null);
