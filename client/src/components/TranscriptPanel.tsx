@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Mic, MicOff, FileText } from 'lucide-react';
+import { Mic, MicOff, FileText, Zap } from 'lucide-react';
 import type { TranscriptEntry } from '../types';
 
 interface TranscriptPanelProps {
@@ -11,7 +11,9 @@ interface TranscriptPanelProps {
   chunkIntervalSeconds: number;
   micError: string | null;
   disabled: boolean;
+  canManualRefresh: boolean;
   onToggleRecording: () => void | Promise<void>;
+  onManualRefresh: () => void;
 }
 
 const AudioWave = () => (
@@ -29,6 +31,9 @@ const AudioWave = () => (
 const formatElapsed = (s: number) =>
   `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
+const formatWallClock = (iso: string) =>
+  new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
 export const TranscriptPanel = ({
   entries,
   interimText,
@@ -38,7 +43,9 @@ export const TranscriptPanel = ({
   chunkIntervalSeconds,
   micError,
   disabled,
+  canManualRefresh,
   onToggleRecording,
+  onManualRefresh,
 }: TranscriptPanelProps) => {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -88,7 +95,7 @@ export const TranscriptPanel = ({
           </div>
         </div>
 
-        {/* Mic control row */}
+        {/* Mic + manual button row */}
         <div className="mt-3 flex items-center gap-3">
           <button
             type="button"
@@ -114,7 +121,7 @@ export const TranscriptPanel = ({
                   <span className="text-sm text-slate-300">Listening…</span>
                 </div>
                 <p className="mt-0.5 font-mono text-[11px] text-slate-600">
-                  Whisper chunk in {secondsUntilChunk}s
+                  Auto-suggest in {secondsUntilChunk}s
                 </p>
               </>
             ) : (
@@ -123,6 +130,20 @@ export const TranscriptPanel = ({
               </p>
             )}
           </div>
+
+          {/* Manual suggest button — only while recording */}
+          {isRecording && (
+            <button
+              type="button"
+              onClick={onManualRefresh}
+              disabled={!canManualRefresh || isBusy}
+              title="Get suggestions now without waiting for auto-refresh"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold text-cyan-300 transition hover:border-cyan-400/60 hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:border-slate-700 disabled:bg-transparent disabled:text-slate-600"
+            >
+              <Zap className="h-3 w-3" />
+              Suggest now
+            </button>
+          )}
         </div>
 
         {/* Chunk progress bar */}
@@ -159,30 +180,21 @@ export const TranscriptPanel = ({
         {entries.map((entry) => (
           <article
             key={entry.id}
-            className="group flex gap-3 border-t border-slate-800/50 px-5 py-3.5 transition-colors hover:bg-slate-900/40"
+            className="border-t border-slate-800/50 px-5 py-2.5 transition-colors hover:bg-slate-900/40"
           >
-            <div className="mt-0.5 w-16 shrink-0 text-right">
-              <time className="block font-mono text-[11px] text-slate-400">
-                {new Date(entry.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            <p className={`text-[0.88rem] leading-relaxed ${entry.status === 'error' ? 'text-rose-300/80' : 'text-slate-300'}`}>
+              <time className="mr-2 font-mono text-[11px] font-medium text-slate-500 select-none">
+                {formatWallClock(entry.createdAt)}
               </time>
-              <span className="block font-mono text-[10px] text-slate-600">{entry.timestamp}</span>
-            </div>
-            <p
-              className={`text-[0.9rem] leading-relaxed ${
-                entry.status === 'error' ? 'text-rose-300/80' : 'text-slate-300'
-              }`}
-            >
               {entry.text}
             </p>
           </article>
         ))}
 
         {isRecording && interimText ? (
-          <article className="flex gap-3 border-t border-slate-800/40 bg-slate-900/30 px-5 py-3.5">
-            <div className="mt-2 shrink-0">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            </div>
-            <p className="text-[0.9rem] italic leading-relaxed text-slate-500">
+          <article className="border-t border-slate-800/40 bg-slate-900/30 px-5 py-2.5">
+            <p className="text-[0.88rem] italic leading-relaxed text-slate-500">
+              <span className="mr-2 inline-block h-1.5 w-1.5 translate-y-[-1px] rounded-full bg-cyan-400 align-middle animate-pulse" />
               {interimText}
               <span className="ml-0.5 inline-block h-3.5 w-0.5 translate-y-0.5 bg-cyan-400 animate-cursor-blink" />
             </p>

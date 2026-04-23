@@ -92,32 +92,38 @@ interface ChatMessageProps {
 
 export const ChatMessage = ({ message }: ChatMessageProps) => {
   const isUser = message.role === 'user';
+  const time = new Date(message.timestamp).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
   return (
-    <div className={`flex items-start gap-2.5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-      {/* Avatar */}
-      <div
-        className={[
-          'mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-[10px] font-bold ring-1',
-          isUser
-            ? 'bg-cyan-400/20 text-cyan-200 ring-cyan-400/30'
-            : 'bg-slate-700/60 text-slate-300 ring-slate-600/40',
-        ].join(' ')}
-      >
-        {isUser ? 'You' : 'AI'}
+    <div className="space-y-1">
+      {/* Sender line */}
+      <div className="flex items-center gap-1.5">
+        <span className={`text-[11px] font-semibold ${isUser ? 'text-cyan-300' : 'text-slate-400'}`}>
+          {isUser ? 'You' : 'Assistant'}
+        </span>
+        {isUser && message.label && (
+          <>
+            <span className="text-[10px] text-slate-600">·</span>
+            <span className="text-[10px] font-medium text-slate-500">{message.label}</span>
+          </>
+        )}
+        <span className="ml-auto font-mono text-[10px] text-slate-700">{time}</span>
       </div>
 
-      {/* Bubble */}
+      {/* Message body */}
       <div
         className={[
-          'max-w-[82%] rounded-xl px-3.5 py-2.5 text-[0.83rem] leading-6',
+          'rounded-xl px-3.5 py-2.5 text-[0.85rem] leading-6',
           isUser
-            ? 'rounded-tr-sm bg-cyan-400 text-slate-950'
-            : 'rounded-tl-sm border border-slate-800/80 bg-slate-900/80 text-slate-200',
+            ? 'bg-slate-800/60 text-slate-200'
+            : 'border border-slate-800/60 bg-slate-900/60 text-slate-200',
         ].join(' ')}
       >
         {isUser ? (
-          <p className="whitespace-pre-wrap font-medium">{message.content}</p>
+          <p className="whitespace-pre-wrap">{message.content}</p>
         ) : (
           <div className="space-y-1.5">{renderMarkdown(message.content)}</div>
         )}

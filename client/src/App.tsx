@@ -14,8 +14,16 @@ function App() {
   const session = useSession(settings, hasApiKey);
   const canManualRefresh = session.isRecording && session.currentRecordingSeconds >= 10;
 
+  const suggestionLabel: Record<Suggestion['type'], string> = {
+    ASK: 'Question to ask',
+    FACT_CHECK: 'Fact Check',
+    TALKING_POINT: 'Talking Point',
+    ANSWER: 'Answer',
+    CLARIFY: 'Clarify',
+  };
+
   const handleSuggestionSelect = async (suggestion: Suggestion) => {
-    await session.sendChatMessage(suggestion.full_prompt, true);
+    await session.sendChatMessage(suggestion.full_prompt, true, suggestionLabel[suggestion.type]);
   };
 
   return (
@@ -73,7 +81,9 @@ function App() {
             chunkIntervalSeconds={settings.transcriptChunkInterval}
             micError={session.micError}
             disabled={!hasApiKey}
+            canManualRefresh={canManualRefresh}
             onToggleRecording={session.toggleRecording}
+            onManualRefresh={session.manualRefresh}
           />
 
           <SuggestionsPanel

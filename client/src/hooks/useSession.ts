@@ -220,7 +220,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
   }, [generateSuggestionsForTranscript]);
 
   const sendChatMessage = useCallback(
-    async (content: string, isDetailedAnswer = false) => {
+    async (content: string, isDetailedAnswer = false, label?: string) => {
       const trimmed = content.trim();
 
       if (!trimmed || !hasApiKey || isStreamingChat) {
@@ -232,6 +232,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
         role: 'user',
         content: trimmed,
         timestamp: new Date().toISOString(),
+        label,
       };
       const assistantMessage: ChatMessage = {
         id: createId(),
