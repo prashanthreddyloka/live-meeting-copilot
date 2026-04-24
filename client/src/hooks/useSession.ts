@@ -135,29 +135,43 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
         const { text } = await transcribeAudio(audio, settings.groqApiKey);
         clearInterimRef.current();
         const trimmedText = text.trim();
-        if (!trimmedText) {
-          // Silent segment — no speech detected, skip without adding an entry
-          return;
+
+        let confirmedTranscript: string;
+        if (trimmedText) {
+          const entry: TranscriptEntry = {
+            id: createId(),
+            timestamp,
+            createdAt: new Date().toISOString(),
+            seconds: elapsedSeconds,
+            text: trimmedText,
+            status: 'success',
+          };
+          const nextEntries = [...transcriptRef.current, entry];
+          setTranscriptEntries(nextEntries);
+          confirmedTranscript = flattenTranscript(nextEntries);
+        } else {
+          // Silent segment — no new transcript entry, but use existing context
+          confirmedTranscript = flattenTranscript(transcriptRef.current);
         }
-        const entry: TranscriptEntry = {
-          id: createId(),
-          timestamp,
-          createdAt: new Date().toISOString(),
-          seconds: elapsedSeconds,
-          text: trimmedText,
-          status: 'success',
-        };
-        const nextEntries = [...transcriptRef.current, entry];
-        setTranscriptEntries(nextEntries);
-        const confirmedTranscript = flattenTranscript(nextEntries);
+
+        // Always refresh suggestions every 30s cycle as long as we have any context
         const fullContext = liveContext
           ? `${confirmedTranscript}\n[Live] ${liveContext}`
           : confirmedTranscript;
-        await generateSuggestionsForTranscript(fullContext, timestamp, elapsedSeconds);
+        if (fullContext.trim()) {
+          await generateSuggestionsForTranscript(fullContext, timestamp, elapsedSeconds);
+        }
       } catch (error) {
-        // Transcription errors are typically silence or tiny blobs — swallow silently
         console.warn('[transcription] skipped segment:', error instanceof Error ? error.message : error);
         clearInterimRef.current();
+        // Still refresh suggestions from existing confirmed transcript + live context
+        const existingTranscript = flattenTranscript(transcriptRef.current);
+        const fullContext = liveContext
+          ? `${existingTranscript}\n[Live] ${liveContext}`
+          : existingTranscript;
+        if (fullContext.trim()) {
+          await generateSuggestionsForTranscript(fullContext, timestamp, elapsedSeconds);
+        }
       } finally {
         setIsTranscribing(false);
       }

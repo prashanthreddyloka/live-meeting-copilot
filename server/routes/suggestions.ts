@@ -113,9 +113,13 @@ suggestionsRouter.post('/', async (request, response, next) => {
       choices?: Array<{ message?: { content?: string } }>;
     };
     const content = data.choices?.[0]?.message?.content ?? '';
+    // Strip markdown code fences the model sometimes adds despite instructions
+    const jsonStr = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    // Fall back to extracting the first JSON array if extra text remains
+    const arrayMatch = /\[[\s\S]*\]/.exec(jsonStr);
     let parsed: unknown;
     try {
-      parsed = JSON.parse(content);
+      parsed = JSON.parse(arrayMatch ? arrayMatch[0] : jsonStr);
     } catch {
       response.status(500).json({ error: 'Model returned invalid JSON — please retry' });
       return;
