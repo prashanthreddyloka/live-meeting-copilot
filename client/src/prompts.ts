@@ -1,6 +1,3 @@
-export const ACTIVE_CHAT_MODEL = 'openai/gpt-oss-120b';
-export const TRANSCRIPTION_MODEL = 'whisper-large-v3';
-
 export const DEFAULT_SUGGESTION_CONTEXT_WINDOW = 600;
 export const DEFAULT_DETAILED_CONTEXT_WINDOW = 2000;
 export const DEFAULT_CHAT_CONTEXT_WINDOW = 1500;

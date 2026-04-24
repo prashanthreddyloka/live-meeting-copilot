@@ -325,6 +325,7 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
         role: message.role,
         content: message.content,
         timestamp: message.timestamp,
+        ...(message.label ? { label: message.label } : {}),
       })),
     };
 

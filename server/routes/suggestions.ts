@@ -113,7 +113,14 @@ suggestionsRouter.post('/', async (request, response, next) => {
       choices?: Array<{ message?: { content?: string } }>;
     };
     const content = data.choices?.[0]?.message?.content ?? '';
-    const suggestions = parseSuggestions(JSON.parse(content) as unknown);
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(content);
+    } catch {
+      response.status(500).json({ error: 'Model returned invalid JSON — please retry' });
+      return;
+    }
+    const suggestions = parseSuggestions(parsed);
     response.json({ suggestions });
   } catch (error) {
     next(error);
