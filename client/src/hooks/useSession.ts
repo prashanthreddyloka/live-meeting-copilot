@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { fetchSuggestions } from '../services/suggestionsService';
 import { transcribeAudio } from '../services/transcriptionService';
 import { streamChatCompletion } from '../services/chatService';
@@ -177,24 +177,6 @@ export const useSession = (settings: SettingsState, hasApiKey: boolean) => {
 
   clearInterimRef.current = clearInterim;
   interimTextRef.current = interimText;
-
-  // Generate suggestions every 20s from interimText (independent of Whisper chunks)
-  useEffect(() => {
-    if (!isRecording || !hasApiKey) return;
-    const INTERVAL_MS = 20_000;
-
-    const timer = window.setInterval(() => {
-      const elapsed = elapsedSecondsRef.current;
-      if (elapsed < MIN_TRANSCRIPTION_SECONDS) return;
-      const confirmed = flattenTranscript(transcriptRef.current);
-      const live = interimTextRef.current;
-      if (!confirmed && !live) return;
-      const fullContext = live ? `${confirmed}\n[Live] ${live}` : confirmed;
-      void generateSuggestionsForTranscript(fullContext, formatElapsed(elapsed), elapsed);
-    }, INTERVAL_MS);
-
-    return () => window.clearInterval(timer);
-  }, [isRecording, hasApiKey, generateSuggestionsForTranscript]);
 
   const toggleRecording = useCallback(async () => {
     setMicError(null);
