@@ -2,6 +2,8 @@
 
 A full-stack AI meeting copilot that transcribes your mic in real time, surfaces contextual suggestion cards every 20 seconds, and lets you open any card into a streaming transcript-grounded chat — all during a live conversation.
 
+# Live APP - https://live-meeting-copilot-client.vercel.app/
+
 ## Features
 
 - **Live transcription** — Web Speech API shows words as you speak; Groq Whisper-large-v3 confirms each chunk with high accuracy every 20 seconds
